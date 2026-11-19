@@ -442,18 +442,42 @@
     </a>
     <button type="button" class="version-toggle" id="versionToggle" aria-expanded="false" aria-controls="versionPanel">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/><path d="M8 2h8"/></svg>
-      <span><strong>Verze aplikace</strong><small>Aktuální verze: 38</small></span>
+      <span><strong>Verze aplikace</strong><small>Aktuální verze: 39</small></span>
       <svg class="version-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
     </button>
   </div>
   <section class="version-panel" id="versionPanel" aria-label="Historie verzí">
     <h3>Historie verzí</h3>
     <ol class="version-history">
+      <li><span class="version-number">Verze 39</span><span>Oprava přístupu na GitHub.</span></li>
       <li><span class="version-number">Verze 38</span><span>Přidány pokyny pod ikonou tužky pro navazování na uživatelem dodanou verzi, číslování a publikování.</span></li>
       <li><span class="version-number">Verze 37</span><span>Trvale viditelné kontaktní odkazy a rozbalovací historie verzí aplikace.</span></li>
       <li><span class="version-number">Verze 36</span><span>Přidána rozbalovací sekce Kontakty s odkazy na přehled, web a e-mail.</span></li>
       <li><span class="version-number">Verze 35</span><span>Graf historie s přepínáním zobrazení Celkem, Zdroje a Odběry.</span></li>
       <li><span class="version-number">Verze 34</span><span>Graf všech dostupných historických období.</span></li>
+      <li><span class="version-number">Verze 33</span><span>Rozšíření práce s historickými daty o přehled vývoje sdílení napříč dostupnými obdobími.</span></li>
+      <li><span class="version-number">Verze 32</span><span>Doplnění souhrnných tabulek a grafického porovnání vybraných historických období.</span></li>
+      <li><span class="version-number">Verze 31</span><span>Možnost vybrat více historických období a zobrazit je společně nebo porovnat.</span></li>
+      <li><span class="version-number">Verze 30</span><span>Rozdělení historických dat podle energetických skupin a přehled dostupných období.</span></li>
+      <li><span class="version-number">Verze 29</span><span>Napojení přehledu na vzdáleně uložené soubory s historií sdílení.</span></li>
+      <li><span class="version-number">Verze 28</span><span>Rozšíření geografické mapy o přehlednější popisky a informace k jednotlivým místům.</span></li>
+      <li><span class="version-number">Verze 27</span><span>Vylepšení ovládání mapy, přiblížení a orientace mezi zdroji a odběrnými místy.</span></li>
+      <li><span class="version-number">Verze 26</span><span>Doplnění geografického zobrazení energetických míst vedle síťového schématu.</span></li>
+      <li><span class="version-number">Verze 25</span><span>Úpravy vzhledu a rozložení aplikace pro pohodlnější používání na menších obrazovkách.</span></li>
+      <li><span class="version-number">Verze 24</span><span>Rozšíření souhrnů o přehledy podle jednotlivých zdrojů a odběrných míst.</span></li>
+      <li><span class="version-number">Verze 23</span><span>Doplnění podrobnějších informací o tocích energie a jejich hodnotách v grafickém přehledu.</span></li>
+      <li><span class="version-number">Verze 22</span><span>Vylepšení filtrování a zvýrazňování toků pro snazší orientaci ve větší síti.</span></li>
+      <li><span class="version-number">Verze 21</span><span>Úpravy síťového grafu pro přehlednější rozmístění uzlů a propojení.</span></li>
+      <li><span class="version-number">Verze 20</span><span>Doplnění dalších souhrnných ukazatelů pro zdroje, odběry a sdílenou energii.</span></li>
+      <li><span class="version-number">Verze 19</span><span>Rozšíření práce s daty o přesnější souhrny a sjednocení názvů energetických míst.</span></li>
+      <li><span class="version-number">Verze 18</span><span>Vylepšení načítání a zpracování exportů CSV a Excel.</span></li>
+      <li><span class="version-number">Verze 17</span><span>Doplnění přehlednějších tabulek zdrojů a odběrů včetně řazení podle hodnot.</span></li>
+      <li><span class="version-number">Verze 16</span><span>Rozšíření interakce mezi tabulkami a síťovým grafem – výběr položky zvýrazní odpovídající uzel.</span></li>
+      <li><span class="version-number">Verze 15</span><span>Úpravy barevného rozlišení toků podle množství sdílené energie.</span></li>
+      <li><span class="version-number">Verze 14</span><span>Doplnění přehlednějších souhrnů počtu propojení a celkového množství energie.</span></li>
+      <li><span class="version-number">Verze 13</span><span>Vylepšení ovládání síťového grafu, rozmístění uzlů a možnosti obnovit jejich pozice.</span></li>
+      <li><span class="version-number">Verze 12</span><span>První rozšíření původního přehledu o úpravy zobrazení a pohodlnější práci s načtenými daty.</span></li>
+      <li><span class="version-number">Verze 11</span><span>Základní interaktivní mapa sdílení energie: načtení Excel/CSV, síťové propojení zdrojů a odběrů, barevné šipky podle objemu toku a souhrnné tabulky.</span></li>
     </ol>
     <div class="edit-guidance">
       <button type="button" class="edit-guidance-toggle" id="editGuidanceToggle" aria-expanded="false" aria-controls="editGuidancePanel">
@@ -973,8 +997,7 @@
             linksArray.push({
                 source: srcNodeId,
                 target: dstNodeId,
-                value: Number(totalVal.toFixed(2)),
-                lineStyle: { color: style.color, opacity: 0.48 }
+                value: Number(totalVal.toFixed(2)),                lineStyle: { color: style.color, opacity: 0.48 }
             });
         });
 
@@ -997,7 +1020,8 @@
                 {
                     type: 'sankey',
                     left: '2%',
-                    right: '28%',                    top: '4%',
+                    right: '28%',
+                    top: '4%',
                     bottom: '8%',
                     nodeWidth: 18,
                     nodeGap: 12,
