@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>Interaktivní energetická síť - Enerkom Jablonecko</title>
+    <title>Sdílení ENERKOM Jablonecko, z.s.</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
@@ -414,7 +414,7 @@
     </div>
 
     <section id="all-history-graph-section" class="all-history-graph" aria-live="polite">
-        <h2>Graf sdílení v čase – ENERKOM JBC 01</h2>
+        <h2>Graf sdílení v čase – skupina ENERKOM JBC 01</h2>
         <p class="graph-subtitle" id="all-history-graph-status">Načítám historická data skupiny ENERKOM JBC 01…</p>
         <div class="all-history-modes" role="group" aria-label="Zobrazení grafu">
             <button type="button" class="all-history-mode active" data-history-mode="total">Celkem</button>
@@ -442,13 +442,14 @@
     </a>
     <button type="button" class="version-toggle" id="versionToggle" aria-expanded="false" aria-controls="versionPanel">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/><path d="M8 2h8"/></svg>
-      <span><strong>Verze aplikace</strong><small>Aktuální verze: 39</small></span>
+      <span><strong>Verze aplikace</strong><small>Aktuální verze: 40</small></span>
       <svg class="version-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
     </button>
   </div>
   <section class="version-panel" id="versionPanel" aria-label="Historie verzí">
     <h3>Historie verzí</h3>
     <ol class="version-history">
+      <li><span class="version-number">Verze 40</span><span>Úprava názvu grafu a názvu stránky v prohlížeči.</span></li>
       <li><span class="version-number">Verze 39</span><span>Oprava přístupu na GitHub.</span></li>
       <li><span class="version-number">Verze 38</span><span>Přidány pokyny pod ikonou tužky pro navazování na uživatelem dodanou verzi, číslování a publikování.</span></li>
       <li><span class="version-number">Verze 37</span><span>Trvale viditelné kontaktní odkazy a rozbalovací historie verzí aplikace.</span></li>
@@ -996,8 +997,8 @@
 
             linksArray.push({
                 source: srcNodeId,
-                target: dstNodeId,
-                value: Number(totalVal.toFixed(2)),                lineStyle: { color: style.color, opacity: 0.48 }
+                target: dstNodeId,                value: Number(totalVal.toFixed(2)),
+                lineStyle: { color: style.color, opacity: 0.48 }
             });
         });
 
