@@ -180,6 +180,38 @@
             .kpi-grid { grid-template-columns: repeat(2, 1fr); }
             .tables-section { grid-template-columns: 1fr; }
         }
+
+        /* Trvale viditelné kontakty a rozbalovací historie verzí */
+        .contact-footer { max-width:1440px; margin:22px auto 8px; }
+        .contact-bar { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+        .contact-link, .version-toggle { display:flex; align-items:center; gap:11px; min-width:0; padding:13px 14px; border:1px solid #d5e2d5; border-radius:9px; color:#355b36; text-decoration:none; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,.05); font:inherit; text-align:left; }
+        .contact-link { transition:background .2s,border-color .2s; }
+        .contact-link:hover, .version-toggle:hover { background:#f2f7f2; border-color:var(--brand-green); }
+        .contact-link svg, .version-toggle svg { width:25px; height:25px; flex:0 0 auto; stroke:currentColor; }
+        .contact-link span, .version-toggle span { min-width:0; overflow-wrap:anywhere; }
+        .contact-link strong, .version-toggle strong { display:block; margin-bottom:3px; color:#334155; font-size:13px; }
+        .contact-link small, .version-toggle small { display:block; color:#64748b; font-size:12px; }
+        .version-toggle { width:100%; cursor:pointer; }
+        .version-toggle .version-chevron { margin-left:auto; width:17px; height:17px; transition:transform .2s; }
+        .version-toggle[aria-expanded="true"] .version-chevron { transform:rotate(180deg); }
+        .version-panel { display:none; margin-top:10px; padding:15px 18px; background:#fff; border:1px solid #d5e2d5; border-radius:9px; box-shadow:0 2px 6px rgba(0,0,0,.05); }
+        .version-panel.open { display:block; }
+        .version-panel h3 { margin:0 0 12px; font-size:16px; }
+        .version-history { display:flex; flex-direction:column; gap:8px; margin:0; padding:0; list-style:none; }
+        .version-history li { display:grid; grid-template-columns:58px 1fr; gap:10px; padding:9px 0; border-bottom:1px solid #edf1ed; font-size:13px; }
+        .version-history li:last-child { border-bottom:0; }
+        .version-number { color:var(--brand-green-dark); font-weight:700; white-space:nowrap; }
+        @media(max-width:850px) { .contact-bar { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        @media(max-width:520px) { .contact-bar { grid-template-columns:1fr; } }
+
+        .edit-guidance { margin-top:14px; border-top:1px solid #edf1ed; padding-top:12px; }
+        .edit-guidance-toggle { display:inline-flex; align-items:center; gap:8px; border:1px solid #d5e2d5; border-radius:7px; background:#f8fbf8; color:#355b36; padding:9px 12px; font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+        .edit-guidance-toggle:hover { background:#eef4ee; border-color:var(--brand-green); }
+        .edit-guidance-toggle svg { width:17px; height:17px; }
+        .edit-guidance-panel { display:none; margin-top:10px; padding:13px 15px; background:#f8faf8; border:1px solid #dce8dc; border-radius:8px; color:#475569; font-size:13px; line-height:1.6; }
+        .edit-guidance-panel.open { display:block; }
+        .edit-guidance-panel h4 { margin:0 0 7px; color:var(--brand-dark); font-size:14px; }
+        .edit-guidance-panel ol { margin:6px 0 0; padding-left:20px; }
     </style>
 </head>
 <body>
@@ -394,6 +426,56 @@
     </section>
 </div>
 
+<footer class="contact-footer" aria-label="Kontakty a informace o verzi Enerkom Jablonecko">
+  <div class="contact-bar">
+    <a class="contact-link" href="https://enerkomjbc.github.io/EnerkomJBC/" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-7"/><path d="M19 6h-4"/></svg>
+      <span><strong>Webová verze přehledu</strong><small>enerkomjbc.github.io/EnerkomJBC/</small></span>
+    </a>
+    <a class="contact-link" href="https://enerkom-jablonecko.org/" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
+      <span><strong>Web Enerkom Jablonecko</strong><small>enerkom-jablonecko.org</small></span>
+    </a>
+    <a class="contact-link" href="mailto:info@enerkom-jablonecko.org">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+      <span><strong>E-mail</strong><small>info@enerkom-jablonecko.org</small></span>
+    </a>
+    <button type="button" class="version-toggle" id="versionToggle" aria-expanded="false" aria-controls="versionPanel">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/><path d="M8 2h8"/></svg>
+      <span><strong>Verze aplikace</strong><small>Aktuální verze: 38</small></span>
+      <svg class="version-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+  </div>
+  <section class="version-panel" id="versionPanel" aria-label="Historie verzí">
+    <h3>Historie verzí</h3>
+    <ol class="version-history">
+      <li><span class="version-number">Verze 38</span><span>Přidány pokyny pod ikonou tužky pro navazování na uživatelem dodanou verzi, číslování a publikování.</span></li>
+      <li><span class="version-number">Verze 37</span><span>Trvale viditelné kontaktní odkazy a rozbalovací historie verzí aplikace.</span></li>
+      <li><span class="version-number">Verze 36</span><span>Přidána rozbalovací sekce Kontakty s odkazy na přehled, web a e-mail.</span></li>
+      <li><span class="version-number">Verze 35</span><span>Graf historie s přepínáním zobrazení Celkem, Zdroje a Odběry.</span></li>
+      <li><span class="version-number">Verze 34</span><span>Graf všech dostupných historických období.</span></li>
+    </ol>
+    <div class="edit-guidance">
+      <button type="button" class="edit-guidance-toggle" id="editGuidanceToggle" aria-expanded="false" aria-controls="editGuidancePanel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 4 4 4L8 20l-5 1 1-5L16 4Z"/><path d="m14 6 4 4"/></svg>
+        Pokyny pro další úpravy
+      </button>
+      <div class="edit-guidance-panel" id="editGuidancePanel">
+        <h4>Jak pokračovat při další úpravě aplikace</h4>
+        <p>Tyto pokyny slouží jako stručné předání kontextu pro další práci na aplikaci Enerkom Jablonecko. Rozhodující je vždy poslední číslovaný HTML soubor, který uživatel v daném úkolu nahraje. Historie na GitHubu ani jeho aktuální obsah nejsou zdrojem pro další úpravy.</p>
+        <ol>
+          <li>Otevři a prohlédni si HTML soubor, který uživatel právě dodal. Vycházej výhradně z něj a zachovej jeho dosavadní funkce a vzhled, pokud uživatel výslovně nechce změnu.</li>
+          <li>Nové číslo verze odvoď od čísla v dodaném souboru a zvyš ho přesně o 1. Neřiď se nejvyšším číslem, které mohlo vzniknout v jiné větvi práce.</li>
+          <li>Do názvu nového souboru uveď nové číslo a krátký popis změny. Aktualizuj údaj „Aktuální verze“ i seznam Historie verzí v aplikaci; novou položku vlož na začátek.</li>
+          <li>Vytvoř nový samostatný HTML soubor ke stažení. Původní soubor uživatele nikdy nepřepisuj.</li>
+          <li>Obsah právě vytvořeného číslovaného souboru současně publikuj do repozitáře <strong>EnerkomJbc/EnerkomJBC</strong> jako <strong>index.html</strong>, přepiš dosavadní obsah a ověř, že GitHub změnu skutečně přijal.</li>
+          <li>Uživatel má uchované vlastní číslované verze a může se kdykoliv vrátit ke starší. Při každém novém zadání proto znovu vycházej z konkrétního souboru, který právě nahraje.</li>
+        </ol>
+        <p><strong>Potvrzení:</strong> O nahrání na GitHub informuj jako o dokončeném pouze tehdy, když nástroj potvrdí úspěšné uložení. Pokud se publikace nepodaří, sděl to výslovně a neslibuj, že je aplikace na webu aktualizovaná.</p>
+      </div>
+    </div>
+  </section>
+</footer>
 
 <div class="history-modal" id="historyModal" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
   <div class="history-dialog">
@@ -412,6 +494,22 @@
 </div>
 
 <script>
+
+    const versionToggle = document.getElementById('versionToggle');
+    const versionPanel = document.getElementById('versionPanel');
+    versionToggle.addEventListener('click', () => {
+        const expanded = versionToggle.getAttribute('aria-expanded') === 'true';
+        versionToggle.setAttribute('aria-expanded', String(!expanded));
+        versionPanel.classList.toggle('open', !expanded);
+    });
+    const editGuidanceToggle = document.getElementById('editGuidanceToggle');
+    const editGuidancePanel = document.getElementById('editGuidancePanel');
+    editGuidanceToggle.addEventListener('click', () => {
+        const expanded = editGuidanceToggle.getAttribute('aria-expanded') === 'true';
+        editGuidanceToggle.setAttribute('aria-expanded', String(!expanded));
+        editGuidancePanel.classList.toggle('open', !expanded);
+    });
+
     const KML_POINTS = [
         { name: "Palackého 2345/29", lat: 50.7300588, lon: 15.1692954, type: "src", keys: ["palackeho_29", "palackeho 29"] },
         { name: "Janov č.e.1132", lat: 50.7797416, lon: 15.1734893, type: "src", keys: ["janov_1132", "janov 1132", "dafina"] },
@@ -899,8 +997,7 @@
                 {
                     type: 'sankey',
                     left: '2%',
-                    right: '28%',
-                    top: '4%',
+                    right: '28%',                    top: '4%',
                     bottom: '8%',
                     nodeWidth: 18,
                     nodeGap: 12,
