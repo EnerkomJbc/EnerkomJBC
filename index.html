@@ -49,7 +49,7 @@
         .history-btn, .graph-btn { font-family: inherit; }
         .graph-btn { background:#5b7f5c; }
         .graph-btn:hover { background:#466947; }
-        .all-history-graph { display:none; margin:20px 0; padding:18px 20px; background:#fff; border:1px solid #d5e2d5; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.06); }
+        .all-history-graph { display:block; margin:20px 0; padding:18px 20px; background:#fff; border:1px solid #d5e2d5; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.06); }
         .all-history-graph h2 { margin:0 0 6px; color:var(--brand-dark); font-size:20px; }
         .all-history-graph .graph-subtitle { margin:0 0 12px; color:#64748b; font-size:13px; }
         .all-history-chart { width:100%; height:390px; }
@@ -57,6 +57,12 @@
         .all-history-mode { border:1px solid #cbd5cb; background:#f7faf7; color:#355b36; border-radius:6px; padding:8px 14px; cursor:pointer; font-weight:600; }
         .all-history-mode.active { background:#5b7f5c; border-color:#5b7f5c; color:#fff; }
         .all-history-table-wrap { overflow-x:auto; }
+        .all-history-groups { display:flex; flex-wrap:wrap; gap:10px 18px; padding:10px 12px; margin:10px 0; background:#f7faf7; border:1px solid #e2e8e2; border-radius:8px; }
+        .all-history-groups label { display:inline-flex; align-items:center; gap:6px; font-size:13px; cursor:pointer; }
+        .all-history-graph tbody tr { transition:background .15s, box-shadow .15s; cursor:default; }
+        .all-history-graph tbody tr:hover, .all-history-graph tbody tr.linked-highlight { background:#e8f2e8; box-shadow:inset 4px 0 #5b7f5c; }
+        .all-history-detail { color:#64748b; font-size:12px; margin-top:3px; }
+        .all-history-count { font-weight:700; white-space:nowrap; }
         .all-history-graph table { width:100%; border-collapse:collapse; }
         .all-history-graph th, .all-history-graph td { padding:9px 10px; border-bottom:1px solid #e2e8e2; text-align:left; }
         .all-history-graph th { background:#f5f8f5; color:#475569; }
@@ -249,7 +255,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>
                 Historie
             </button>
-            <button type="button" class="file-btn graph-btn" id="allHistoryGraphBtn" title="Zobrazit graf všech období skupiny ENERKOM JBC 01">
+            <button type="button" class="file-btn graph-btn" id="allHistoryGraphBtn" title="Přejít na souhrnný graf sdílení ENERKOM Jablonecko">
                 <svg viewBox="0 0 88 88" aria-hidden="true"><path d="M 31 76 A 36 36 0 1 1 76 45" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="butt"/><path d="M 36 20 C 59 20 73 39 69 64 C 45 68 27 51 36 20 Z" fill="#ffffff"/><path d="M 40 26 C 50 40 58 51 66 61" fill="none" stroke="#5b7f5c" stroke-width="2.5" stroke-linecap="round"/><path d="M 49 39 L 60 36 M 54 47 L 64 45 M 45 33 L 42 43 M 52 44 L 48 54" fill="none" stroke="#5b7f5c" stroke-width="2" stroke-linecap="round"/><g transform="translate(28 62) rotate(42)"><rect x="-10" y="-7" width="20" height="14" rx="3" fill="#ffffff"/><rect x="-6" y="7" width="4" height="9" rx="1" fill="#dce8dc"/><rect x="3" y="7" width="4" height="9" rx="1" fill="#dce8dc"/></g></svg>
                 GRAF
             </button>
@@ -414,14 +420,19 @@
     </div>
 
     <section id="all-history-graph-section" class="all-history-graph" aria-live="polite">
-        <h2>Graf sdílení v čase – skupina ENERKOM JBC 01</h2>
-        <p class="graph-subtitle" id="all-history-graph-status">Načítám historická data skupiny ENERKOM JBC 01…</p>
+        <h2>Graf sdílení v čase ENERKOM Jablonecko</h2>
+        <p class="graph-subtitle" id="all-history-graph-status">Automaticky načítám historická data všech skupin…</p>
+        <div class="all-history-groups" id="all-history-groups" aria-label="Výběr skupin">
+            <label><input type="checkbox" value="JANOV" checked> JANOV</label>
+            <label><input type="checkbox" value="PALACKÉHO" checked> PALACKÉHO</label>
+            <label><input type="checkbox" value="ENERKOM JBC 01" checked> ENERKOM JBC 01</label>
+        </div>
         <div class="all-history-modes" role="group" aria-label="Zobrazení grafu">
             <button type="button" class="all-history-mode active" data-history-mode="total">Celkem</button>
             <button type="button" class="all-history-mode" data-history-mode="sources">Zdroje</button>
             <button type="button" class="all-history-mode" data-history-mode="targets">Odběry</button>
         </div>
-        <div id="all-history-chart" class="all-history-chart" role="img" aria-label="Vývoj celkového sdílení energie ve všech dostupných obdobích skupiny ENERKOM JBC 01"></div>
+        <div id="all-history-chart" class="all-history-chart" role="img" aria-label="Vývoj sdílení energie všech skupin ENERKOM Jablonecko"></div>
         <div class="all-history-table-wrap" id="all-history-table-wrap"></div>
     </section>
 </div>
@@ -442,13 +453,14 @@
     </a>
     <button type="button" class="version-toggle" id="versionToggle" aria-expanded="false" aria-controls="versionPanel">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/><path d="M8 2h8"/></svg>
-      <span><strong>Verze aplikace</strong><small>Aktuální verze: 40</small></span>
+      <span><strong>Verze aplikace</strong><small>Aktuální verze: 41</small></span>
       <svg class="version-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
     </button>
   </div>
   <section class="version-panel" id="versionPanel" aria-label="Historie verzí">
     <h3>Historie verzí</h3>
     <ol class="version-history">
+      <li><span class="version-number">Verze 41</span><span>Trvale zobrazený souhrnný graf sdílení všech skupin ENERKOM Jablonecko, výběr skupin, rozpad podle zdrojů a odběrů a propojení grafu s tabulkou.</span></li>
       <li><span class="version-number">Verze 40</span><span>Úprava názvu grafu a názvu stránky v prohlížeči.</span></li>
       <li><span class="version-number">Verze 39</span><span>Oprava přístupu na GitHub.</span></li>
       <li><span class="version-number">Verze 38</span><span>Přidány pokyny pod ikonou tužky pro navazování na uživatelem dodanou verzi, číslování a publikování.</span></li>
@@ -496,6 +508,7 @@
           <li>Obsah právě vytvořeného číslovaného souboru současně publikuj do repozitáře <strong>EnerkomJbc/EnerkomJBC</strong> jako <strong>index.html</strong>, přepiš dosavadní obsah a ověř, že GitHub změnu skutečně přijal.</li>
           <li>Uživatel má uchované vlastní číslované verze a může se kdykoliv vrátit ke starší. Při každém novém zadání proto znovu vycházej z konkrétního souboru, který právě nahraje.</li>
         </ol>
+        <p><strong>Spolupráce:</strong> Aplikace Enerkom Jablonecko je připravována a průběžně upravována uživatelem ve spolupráci s ChatGPT od OpenAI. Pro navázání práce využij dostupnou historii konverzací. <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">Otevřít ChatGPT</a>. Přímý odkaz na konkrétní konverzaci lze doplnit po vytvoření sdíleného odkazu v ChatGPT.</p>
         <p><strong>Potvrzení:</strong> O nahrání na GitHub informuj jako o dokončeném pouze tehdy, když nástroj potvrdí úspěšné uložení. Pokud se publikace nepodaří, sděl to výslovně a neslibuj, že je aplikace na webu aktualizovaná.</p>
       </div>
     </div>
@@ -984,8 +997,7 @@
                 nodesMap.set(srcNodeId, {
                     name: srcNodeId,
                     itemStyle: { color: '#DB4436', borderColor: '#b91c1c' }
-                });
-            }
+                });            }
             if (!nodesMap.has(dstNodeId)) {
                 nodesMap.set(dstNodeId, {
                     name: dstNodeId,
@@ -997,7 +1009,8 @@
 
             linksArray.push({
                 source: srcNodeId,
-                target: dstNodeId,                value: Number(totalVal.toFixed(2)),
+                target: dstNodeId,
+                value: Number(totalVal.toFixed(2)),
                 lineStyle: { color: style.color, opacity: 0.48 }
             });
         });
@@ -1281,18 +1294,28 @@ initAndRenderGeoMap = function() {
     let historyRequestCounter = 0;
 
     document.getElementById('historyBtn').addEventListener('click', openHistory);
-    document.getElementById('allHistoryGraphBtn').addEventListener('click', loadAllEnerkomHistoryGraph);
+    document.getElementById('allHistoryGraphBtn').addEventListener('click', () => {
+        document.getElementById('all-history-graph-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
     let allHistorySummaries = [];
     let allHistoryChartMode = 'total';
+    let allHistorySelectedGroups = ['JANOV', 'PALACKÉHO', 'ENERKOM JBC 01'];
     document.querySelectorAll('.all-history-mode').forEach(button => button.addEventListener('click', () => {
         allHistoryChartMode = button.dataset.historyMode;
         document.querySelectorAll('.all-history-mode').forEach(item => item.classList.toggle('active', item === button));
         renderAllHistoryChart();
     }));
+    document.querySelectorAll('#all-history-groups input[type="checkbox"]').forEach(input => input.addEventListener('change', () => {
+        allHistorySelectedGroups = Array.from(document.querySelectorAll('#all-history-groups input:checked')).map(item => item.value);
+        renderAllHistoryChart();
+    }));
     document.getElementById('historyClose').addEventListener('click', closeHistory);
     historyModal.addEventListener('click', e => { if (e.target === historyModal) closeHistory(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHistory(); });
-    window.addEventListener('DOMContentLoaded', loadLatestHistoryPeriod);
+    window.addEventListener('DOMContentLoaded', () => {
+        loadLatestHistoryPeriod();
+        loadAllEnerkomHistoryGraph();
+    });
 
     function closeHistory() { historyModal.style.display = 'none'; }
 
@@ -1530,45 +1553,43 @@ initAndRenderGeoMap = function() {
     }
 
 
-    // Načte všechna dostupná období hlavní skupiny a vykreslí samostatný časový graf.
+    // Načte historii všech skupin a připraví společný přehled ENERKOM Jablonecko.
     function loadAllEnerkomHistoryGraph() {
-        const section = document.getElementById('all-history-graph-section');
         const status = document.getElementById('all-history-graph-status');
-        const chartElement = document.getElementById('all-history-chart');
         const tableWrap = document.getElementById('all-history-table-wrap');
-        section.style.display = 'block';
-        status.textContent = 'Načítám seznam období skupiny ENERKOM JBC 01…';
+        status.textContent = 'Načítám seznam historických období všech skupin…';
         tableWrap.innerHTML = '';
-        const oldChart = window.echarts && echarts.getInstanceByDom(chartElement);
-        if (oldChart) oldChart.dispose();
-        chartElement.innerHTML = '';
-        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
         historyJsonp('list', {}, data => {
             if (!data || !data.ok) {
                 status.textContent = data?.error || 'Seznam historických souborů se nepodařilo načíst.';
                 return;
             }
             const files = (Array.isArray(data.files) ? data.files : [])
-                .filter(file => extractGroupFromFilename(file.name) === 'ENERKOM JBC 01')
+                .filter(file => ['JANOV', 'PALACKÉHO', 'ENERKOM JBC 01'].includes(extractGroupFromFilename(file.name)))
                 .sort((a, b) => periodEndTimestamp(a.name) - periodEndTimestamp(b.name));
             if (!files.length) {
-                status.textContent = 'Pro skupinu ENERKOM JBC 01 nebyla nalezena žádná historická období.';
+                status.textContent = 'Pro skupiny JANOV, PALACKÉHO ani ENERKOM JBC 01 nebyla nalezena historická data.';
                 return;
             }
-            status.textContent = `Načítám ${files.length} období skupiny ENERKOM JBC 01…`;
+            status.textContent = `Načítám ${files.length} historických souborů ze všech skupin…`;
             Promise.all(files.map(file => fetchHistoryCsv(file))).then(results => {
-                const failed = results.find(result => !result.ok);
-                if (failed) {
-                    status.textContent = failed.error || 'Některý historický soubor se nepodařilo načíst.';
+                const successful = results.filter(result => result.ok);
+                if (!successful.length) {
+                    status.textContent = results.find(result => result.error)?.error || 'Historická data se nepodařilo načíst.';
                     return;
                 }
-                const summaries = results.map(result => summarizeHistoryMatrix(result.matrix, result.file.name));
-                allHistorySummaries = summaries;
-                const rows = summaries.map(item => `<tr><td>${item.label}</td><td>${item.total.toLocaleString('cs-CZ',{minimumFractionDigits:2,maximumFractionDigits:2})} kWh</td><td>${item.sources}</td><td>${item.targets}</td><td>${item.records}</td></tr>`).join('');
-                tableWrap.innerHTML = `<table><thead><tr><th>Období</th><th>Celkem sdíleno</th><th>Zdrojů</th><th>Odběrných míst</th><th>Počet záznamů</th></tr></thead><tbody>${rows}</tbody></table>`;
-                status.textContent = `Načteno všech ${summaries.length} dostupných období skupiny ENERKOM JBC 01.`;
+                const grouped = new Map();
+                successful.forEach(result => {
+                    const group = extractGroupFromFilename(result.file.name);
+                    const period = extractPeriodFromFilename(result.file.name);
+                    const key = period ? `${period.from.getFullYear()}-${period.from.getMonth()+1}-${period.from.getDate()}_${period.to.getFullYear()}-${period.to.getMonth()+1}-${period.to.getDate()}` : periodLabel(result.file.name);
+                    if (!grouped.has(key)) grouped.set(key, { label: periodLabel(result.file.name), end: periodEndTimestamp(result.file.name), byGroup: {} });
+                    grouped.get(key).byGroup[group] = summarizeHistoryMatrix(result.matrix, result.file.name);
+                });
+                allHistorySummaries = Array.from(grouped.values()).sort((a,b) => a.end - b.end);
                 renderAllHistoryChart();
+                const failedCount = results.length - successful.length;
+                status.textContent = `Načteno ${successful.length} souborů ze ${files.length}; souhrn obsahuje ${allHistorySummaries.length} období ze skupin JANOV, PALACKÉHO a ENERKOM JBC 01.${failedCount ? ` Pozor: ${failedCount} souborů se nepodařilo načíst.` : ''}`;
             }).catch(error => {
                 status.textContent = error?.message || 'Při načítání historických dat nastala chyba.';
             });
@@ -1601,42 +1622,73 @@ initAndRenderGeoMap = function() {
         return { label: periodLabel(filename), end: periodEndTimestamp(filename), total, sources: sources.size, targets: targets.size, records, bySource, byTarget };
     }
 
+    function getVisibleHistoryRows() {
+        return allHistorySummaries.map(period => {
+            const active = allHistorySelectedGroups.filter(group => period.byGroup[group]);
+            const total = active.reduce((sum, group) => sum + period.byGroup[group].total, 0);
+            const bySource = {}, byTarget = {};
+            let sources = 0, targets = 0, records = 0;
+            active.forEach(group => {
+                const item = period.byGroup[group];
+                sources += item.sources; targets += item.targets; records += item.records;
+                Object.entries(item.bySource || {}).forEach(([name,value]) => { const key = `${group} · ${name}`; bySource[key] = (bySource[key] || 0) + value; });
+                Object.entries(item.byTarget || {}).forEach(([name,value]) => { const key = `${group} · ${name}`; byTarget[key] = (byTarget[key] || 0) + value; });
+            });
+            return { ...period, total, activeGroups: active.filter(group => period.byGroup[group].total > 0), bySource, byTarget, sources, targets, records };
+        });
+    }
+
     function renderAllHistoryChart() {
         const chartElement = document.getElementById('all-history-chart');
-        if (!chartElement || !allHistorySummaries.length) return;
-        if (!window.echarts) { chartElement.textContent = 'Knihovnu grafu se nepodařilo načíst.'; return; }
-        const chart = echarts.getInstanceByDom(chartElement) || echarts.init(chartElement);
-        const labels = allHistorySummaries.map(item => item.label);
+        const tableWrap = document.getElementById('all-history-table-wrap');
+        if (!chartElement) return;
+        const visible = getVisibleHistoryRows().filter(item => item.activeGroups.length);
+        const labels = visible.map(item => item.label);
+        const format = value => Number(value).toLocaleString('cs-CZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const rowHtml = visible.map((item, index) => {
+            const details = item.activeGroups.map(group => `${group}: ${format(item.byGroup[group].total)} kWh`).join(' · ');
+            return `<tr data-chart-index="${index}"><td>${item.label}<div class="all-history-detail">${details}</div></td><td><strong>${format(item.total)} kWh</strong></td><td class="all-history-count">${item.activeGroups.length}</td><td>${item.sources}</td><td>${item.targets}</td><td>${item.records}</td></tr>`;
+        }).join('');
+        tableWrap.innerHTML = `<table><thead><tr><th>Období a rozpad podle skupin</th><th>Celkem sdíleno</th><th>Počet skupin</th><th>Zdrojů</th><th>Odběrných míst</th><th>Počet záznamů</th></tr></thead><tbody>${rowHtml}</tbody></table>`;
+        const chart = window.echarts ? (echarts.getInstanceByDom(chartElement) || echarts.init(chartElement)) : null;
+        if (!chart) { chartElement.textContent = 'Knihovnu grafu se nepodařilo načíst.'; return; }
+        const palette = ['#5470c6','#91cc75','#fac858','#ee6666','#73c0de','#3ba272','#fc8452','#9a60b4','#ea7ccc','#6e7074','#546fc6','#c4ccd3'];
+        let series = [];
         if (allHistoryChartMode === 'total') {
-            chart.setOption({
-                color: ['#5b7f5c'], animation: true,
-                tooltip: { trigger: 'axis', valueFormatter: value => `${Number(value).toLocaleString('cs-CZ',{minimumFractionDigits:2,maximumFractionDigits:2})} kWh` },
-                legend: { show: false }, grid: { left: 70, right: 28, top: 28, bottom: 65 },
-                xAxis: { type: 'category', data: labels, axisLabel: { interval: 0, rotate: labels.length > 6 ? 35 : 0, hideOverlap: true } },
-                yAxis: { type: 'value', name: 'kWh', min: 0, axisLabel: { formatter: value => Number(value).toLocaleString('cs-CZ') } },
-                series: [{ name: 'Celkem sdíleno', type: 'line', smooth: false, symbol: 'circle', symbolSize: 8, lineStyle: { width: 3 }, areaStyle: { opacity: .12 }, data: allHistorySummaries.map(item => Number(item.total.toFixed(3))) }]
-            }, true);
+            series = allHistorySelectedGroups.map(group => ({ name: group, type: 'bar', stack: 'total', itemStyle: { color: ({ 'JANOV': '#5470c6', 'PALACKÉHO': '#91cc75', 'ENERKOM JBC 01': '#fac858' })[group] }, emphasis: { focus: 'series' }, data: visible.map(item => Number(((item.byGroup[group] || {}).total || 0).toFixed(3))) }));
+            series.push({ name: 'Celkem', type: 'line', symbol: 'circle', symbolSize: 8, lineStyle: { width: 3, color: '#263b2b' }, itemStyle: { color: '#263b2b' }, data: visible.map(item => Number(item.total.toFixed(3))) });
         } else {
             const field = allHistoryChartMode === 'sources' ? 'bySource' : 'byTarget';
-            const namesSet = new Set();
-            allHistorySummaries.forEach(item => Object.keys(item[field] || {}).forEach(name => namesSet.add(name)));
-            const names = Array.from(namesSet).sort((a,b) => a.localeCompare(b, 'cs'));
-            const series = names.map(name => ({
-                name, type: 'line', stack: 'sharing', smooth: false, symbol: 'none',
-                areaStyle: { opacity: .72 }, emphasis: { focus: 'series' },
-                data: allHistorySummaries.map(item => Number(((item[field] || {})[name] || 0).toFixed(3)))
-            }));
-            chart.setOption({
-                color: ['#5470c6','#91cc75','#fac858','#ee6666','#73c0de','#3ba272','#fc8452','#9a60b4','#ea7ccc','#6e7074','#546fc6','#c4ccd3'],
-                animation: true,
-                tooltip: { trigger: 'axis', axisPointer: { type: 'cross' }, valueFormatter: value => `${Number(value).toLocaleString('cs-CZ',{minimumFractionDigits:2,maximumFractionDigits:2})} kWh` },
-                legend: { type: 'scroll', top: 0, left: 8, right: 8, pageTextStyle: { color: '#64748b' } },
-                grid: { left: 70, right: 28, top: 58, bottom: 65 },
-                xAxis: { type: 'category', boundaryGap: false, data: labels, axisLabel: { interval: 0, rotate: labels.length > 6 ? 35 : 0, hideOverlap: true } },
-                yAxis: { type: 'value', name: 'kWh', min: 0, axisLabel: { formatter: value => Number(value).toLocaleString('cs-CZ') } },
-                series
-            }, true);
+            const names = Array.from(new Set(visible.flatMap(item => Object.keys(item[field] || {})))).sort((a,b) => a.localeCompare(b, 'cs'));
+            series = names.map(name => ({ name, type: 'bar', stack: 'sharing', itemStyle: { color: ({ 'JANOV': '#5470c6', 'PALACKÉHO': '#91cc75', 'ENERKOM JBC 01': '#fac858' })[name.split(' · ')[0]] || '#91a3a1' }, emphasis: { focus: 'series' }, data: visible.map(item => Number(((item[field] || {})[name] || 0).toFixed(3))) }));
         }
+        chart.setOption({
+            color: palette, animation: true,
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, valueFormatter: value => `${format(value)} kWh` },
+            legend: { type: 'scroll', top: 0, left: 8, right: 8, pageTextStyle: { color: '#64748b' } },
+            grid: { left: 76, right: 28, top: 55, bottom: 72 },
+            xAxis: { type: 'category', data: labels, axisLabel: { interval: 0, rotate: labels.length > 6 ? 35 : 0, hideOverlap: true } },
+            yAxis: { type: 'value', name: 'kWh', min: 0, axisLabel: { formatter: value => Number(value).toLocaleString('cs-CZ') } },
+            series
+        }, true);
+        tableWrap.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                tableWrap.querySelectorAll('tbody tr').forEach(item => item.classList.remove('linked-highlight'));
+                row.classList.add('linked-highlight');
+                chart.dispatchAction({ type: 'showTip', seriesIndex: 0, dataIndex: Number(row.dataset.chartIndex) });
+            });
+            row.addEventListener('mouseleave', () => {
+                row.classList.remove('linked-highlight');
+                chart.dispatchAction({ type: 'hideTip' });
+            });
+        });
+        chart.off('mouseover');
+        chart.on('mouseover', params => {
+            if (params.componentType !== 'series') return;
+            const row = tableWrap.querySelector(`tbody tr[data-chart-index="${params.dataIndex}"]`);
+            tableWrap.querySelectorAll('tbody tr').forEach(item => item.classList.toggle('linked-highlight', item === row));
+        });
+        chart.on('mouseout', () => tableWrap.querySelectorAll('tbody tr').forEach(item => item.classList.remove('linked-highlight')));
         setTimeout(() => chart.resize(), 0);
         if (!chartElement.dataset.resizeObserved && window.ResizeObserver) {
             new ResizeObserver(() => chart.resize()).observe(chartElement);
