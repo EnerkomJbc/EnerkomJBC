@@ -60,7 +60,11 @@
         .all-history-groups { display:flex; flex-wrap:wrap; gap:10px 18px; padding:10px 12px; margin:10px 0; background:#f7faf7; border:1px solid #e2e8e2; border-radius:8px; }
         .all-history-groups label { display:inline-flex; align-items:center; gap:6px; font-size:13px; cursor:pointer; }
         .all-history-graph tbody tr { transition:background .15s, box-shadow .15s; cursor:default; }
-        .all-history-graph tbody tr:hover, .all-history-graph tbody tr.linked-highlight { background:#e8f2e8; box-shadow:inset 4px 0 #5b7f5c; }
+        .all-history-graph tbody tr:hover, .all-history-graph tbody tr.linked-highlight, .all-history-graph tbody tr.period-selected { background:#e1efe1; box-shadow:inset 4px 0 #3f7543; }
+        .all-history-graph tbody tr { cursor:pointer; }
+        .chatgpt-link { display:inline-flex; align-items:center; gap:3px; color:#315d37; text-decoration:none; vertical-align:middle; }
+        .chatgpt-link:hover { text-decoration:underline; }
+        @media(max-width:1100px) { .kpi-grid { grid-template-columns:repeat(3,1fr); } }
         .all-history-detail { color:#64748b; font-size:12px; margin-top:3px; }
         .all-history-count { font-weight:700; white-space:nowrap; }
         .all-history-graph table { width:100%; border-collapse:collapse; }
@@ -123,7 +127,7 @@
 
 
         /* Souhrnné karty (Návrh 4 - zelený akcent) */
-        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 18px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 18px; }
         .kpi-card { background: white; padding: 14px 18px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #d5e2d5; border-left: 4px solid var(--brand-green); text-align: center; }
         .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: bold; margin-bottom: 4px; }
         .kpi-value { font-size: 22px; font-weight: bold; color: var(--brand-dark); }
@@ -265,8 +269,13 @@
     <!-- Přehledové KPI karty -->
     <div class="kpi-grid">
         <div class="kpi-card">
-            <div class="kpi-label">Celkem sdílená energie</div>
+            <div class="kpi-label">Sdílená energie – vybrané období</div>
             <div class="kpi-value" id="kpi-total-kwh">0.00 kWh</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Sdílená energie – celkem</div>
+            <div class="kpi-value" id="kpi-all-time-kwh">Načítám…</div>
+            <div style="font-size:10px;color:#64748b;margin-top:3px;">Všechny skupiny a dostupná období</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-label">Aktivní FVE zdroje</div>
@@ -453,13 +462,14 @@
     </a>
     <button type="button" class="version-toggle" id="versionToggle" aria-expanded="false" aria-controls="versionPanel">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/><path d="M8 2h8"/></svg>
-      <span><strong>Verze aplikace</strong><small>Aktuální verze: 41</small></span>
+      <span><strong>Verze aplikace</strong><small>Aktuální verze: 42</small></span>
       <svg class="version-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
     </button>
   </div>
   <section class="version-panel" id="versionPanel" aria-label="Historie verzí">
     <h3>Historie verzí</h3>
     <ol class="version-history">
+      <li><span class="version-number">Verze 42</span><span>Doplněno logo ChatGPT do pokynů, klikací výběr období v souhrnném grafu i tabulce a oddělený ukazatel celkové historicky sdílené energie.</span></li>
       <li><span class="version-number">Verze 41</span><span>Trvale zobrazený souhrnný graf sdílení všech skupin ENERKOM Jablonecko, výběr skupin, rozpad podle zdrojů a odběrů a propojení grafu s tabulkou.</span></li>
       <li><span class="version-number">Verze 40</span><span>Úprava názvu grafu a názvu stránky v prohlížeči.</span></li>
       <li><span class="version-number">Verze 39</span><span>Oprava přístupu na GitHub.</span></li>
@@ -508,7 +518,7 @@
           <li>Obsah právě vytvořeného číslovaného souboru současně publikuj do repozitáře <strong>EnerkomJbc/EnerkomJBC</strong> jako <strong>index.html</strong>, přepiš dosavadní obsah a ověř, že GitHub změnu skutečně přijal.</li>
           <li>Uživatel má uchované vlastní číslované verze a může se kdykoliv vrátit ke starší. Při každém novém zadání proto znovu vycházej z konkrétního souboru, který právě nahraje.</li>
         </ol>
-        <p><strong>Spolupráce:</strong> Aplikace Enerkom Jablonecko je připravována a průběžně upravována uživatelem ve spolupráci s ChatGPT od OpenAI. Pro navázání práce využij dostupnou historii konverzací. <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer"><img src="https://cdn.simpleicons.org/openai/000000" alt="Logo OpenAI / ChatGPT" width="18" height="18" style="vertical-align:middle; margin-right:5px;">Otevřít ChatGPT</a>. Přímý odkaz na konkrétní konverzaci lze doplnit po vytvoření sdíleného odkazu v ChatGPT.</p>
+        <p class="collaboration-note"><strong>Spolupráce:</strong> Aplikace Enerkom Jablonecko je připravována a průběžně upravována uživatelem ve spolupráci s ChatGPT od OpenAI. Pro navázání práce využij dostupnou historii konverzací. <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" class="chatgpt-link"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" style="vertical-align:middle;margin-right:5px"><g fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.1a4.4 4.4 0 0 0-4.2 3 4.4 4.4 0 0 0-3.1 7.4 4.4 4.4 0 0 0 4.1 6.4 4.4 4.4 0 0 0 6.4 0 4.4 4.4 0 0 0 4.1-6.4 4.4 4.4 0 0 0-3.1-7.4 4.4 4.4 0 0 0-4.2-3Z"/><path d="m12 3.1 0 17.8M7.8 6.1l8.4 11.8M4.7 13.5l14.6-3M5.8 17.2l12.4-7.1"/></g></svg><strong>ChatGPT – Otevřít</strong></a>. Přímý odkaz na konkrétní konverzaci lze doplnit po vytvoření sdíleného odkazu v ChatGPT.</p>
         <p><strong>Potvrzení:</strong> O nahrání na GitHub informuj jako o dokončeném pouze tehdy, když nástroj potvrdí úspěšné uložení. Pokud se publikace nepodaří, sděl to výslovně a neslibuj, že je aplikace na webu aktualizovaná.</p>
       </div>
     </div>
@@ -997,7 +1007,8 @@
                 nodesMap.set(srcNodeId, {
                     name: srcNodeId,
                     itemStyle: { color: '#DB4436', borderColor: '#b91c1c' }
-                });            }
+                });
+            }
             if (!nodesMap.has(dstNodeId)) {
                 nodesMap.set(dstNodeId, {
                     name: dstNodeId,
@@ -1298,6 +1309,8 @@ initAndRenderGeoMap = function() {
         document.getElementById('all-history-graph-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
     let allHistorySummaries = [];
+    let allHistoryFilesByPeriod = new Map();
+    let allHistorySelectedPeriodKey = null;
     let allHistoryChartMode = 'total';
     let allHistorySelectedGroups = ['JANOV', 'PALACKÉHO', 'ENERKOM JBC 01'];
     document.querySelectorAll('.all-history-mode').forEach(button => button.addEventListener('click', () => {
@@ -1307,6 +1320,7 @@ initAndRenderGeoMap = function() {
     }));
     document.querySelectorAll('#all-history-groups input[type="checkbox"]').forEach(input => input.addEventListener('change', () => {
         allHistorySelectedGroups = Array.from(document.querySelectorAll('#all-history-groups input:checked')).map(item => item.value);
+        allHistorySelectedPeriodKey = null;
         renderAllHistoryChart();
     }));
     document.getElementById('historyClose').addEventListener('click', closeHistory);
@@ -1583,16 +1597,41 @@ initAndRenderGeoMap = function() {
                     const group = extractGroupFromFilename(result.file.name);
                     const period = extractPeriodFromFilename(result.file.name);
                     const key = period ? `${period.from.getFullYear()}-${period.from.getMonth()+1}-${period.from.getDate()}_${period.to.getFullYear()}-${period.to.getMonth()+1}-${period.to.getDate()}` : periodLabel(result.file.name);
-                    if (!grouped.has(key)) grouped.set(key, { label: periodLabel(result.file.name), end: periodEndTimestamp(result.file.name), byGroup: {} });
+                    if (!grouped.has(key)) grouped.set(key, { key, label: periodLabel(result.file.name), end: periodEndTimestamp(result.file.name), byGroup: {}, filesByGroup: {} });
                     grouped.get(key).byGroup[group] = summarizeHistoryMatrix(result.matrix, result.file.name);
+                    grouped.get(key).filesByGroup[group] = result.file;
                 });
                 allHistorySummaries = Array.from(grouped.values()).sort((a,b) => a.end - b.end);
+                const allTimeTotal = successful.reduce((sum, result) => sum + summarizeHistoryMatrix(result.matrix, result.file.name).total, 0);
+                document.getElementById('kpi-all-time-kwh').textContent = `${allTimeTotal.toLocaleString('cs-CZ', {minimumFractionDigits:2, maximumFractionDigits:2})} kWh`;
                 renderAllHistoryChart();
                 const failedCount = results.length - successful.length;
                 status.textContent = `Načteno ${successful.length} souborů ze ${files.length}; souhrn obsahuje ${allHistorySummaries.length} období ze skupin JANOV, PALACKÉHO a ENERKOM JBC 01.${failedCount ? ` Pozor: ${failedCount} souborů se nepodařilo načíst.` : ''}`;
             }).catch(error => {
                 status.textContent = error?.message || 'Při načítání historických dat nastala chyba.';
             });
+        });
+    }
+
+    function loadSelectedHistoryPeriod(period) {
+        const groups = allHistorySelectedGroups.filter(group => period.filesByGroup[group]);
+        if (!groups.length) return;
+        const status = document.getElementById('all-history-graph-status');
+        status.textContent = `Načítám období ${period.label} pro skupiny ${groups.join(', ')}…`;
+        Promise.all(groups.map(group => fetchHistoryCsv(period.filesByGroup[group]))).then(results => {
+            const failed = results.find(result => !result.ok);
+            if (failed) { status.textContent = failed.error || 'Vybrané období se nepodařilo načíst.'; return; }
+            const matrices = results.map(result => result.matrix).filter(matrix => matrix && matrix.length > 1);
+            if (!matrices.length) { status.textContent = `Pro období ${period.label} nejsou k dispozici datové řádky.`; return; }
+            const merged = matrices[0].slice();
+            matrices.slice(1).forEach(matrix => merged.push(...matrix.slice(1)));
+            document.getElementById('history-compare').innerHTML = '';
+            document.getElementById('history-compare').style.display = 'none';
+            document.getElementById('file-name').textContent = `Období: ${period.label} · Skupiny: ${groups.join(', ')}`;
+            processRawMatrix(merged);
+            status.textContent = `Vybráno období ${period.label}. Data mapy a tabulek odpovídají skupinám: ${groups.join(', ')}.`;
+        }).catch(error => {
+            status.textContent = error?.message || `Období ${period.label} se nepodařilo načíst.`;
         });
     }
 
@@ -1647,7 +1686,7 @@ initAndRenderGeoMap = function() {
         const format = value => Number(value).toLocaleString('cs-CZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const rowHtml = visible.map((item, index) => {
             const details = item.activeGroups.map(group => `${group}: ${format(item.byGroup[group].total)} kWh`).join(' · ');
-            return `<tr data-chart-index="${index}"><td>${item.label}<div class="all-history-detail">${details}</div></td><td><strong>${format(item.total)} kWh</strong></td><td class="all-history-count">${item.activeGroups.length}</td><td>${item.sources}</td><td>${item.targets}</td><td>${item.records}</td></tr>`;
+            return `<tr data-chart-index="${index}" data-period-key="${item.key}" class="${item.key === allHistorySelectedPeriodKey ? 'period-selected' : ''}" tabindex="0" title="Kliknutím načteš data tohoto období"><td>${item.label}<div class="all-history-detail">${details}</div></td><td><strong>${format(item.total)} kWh</strong></td><td class="all-history-count">${item.activeGroups.length}</td><td>${item.sources}</td><td>${item.targets}</td><td>${item.records}</td></tr>`;
         }).join('');
         tableWrap.innerHTML = `<table><thead><tr><th>Období a rozpad podle skupin</th><th>Celkem sdíleno</th><th>Počet skupin</th><th>Zdrojů</th><th>Odběrných míst</th><th>Počet záznamů</th></tr></thead><tbody>${rowHtml}</tbody></table>`;
         const chart = window.echarts ? (echarts.getInstanceByDom(chartElement) || echarts.init(chartElement)) : null;
@@ -1671,7 +1710,22 @@ initAndRenderGeoMap = function() {
             yAxis: { type: 'value', name: 'kWh', min: 0, axisLabel: { formatter: value => Number(value).toLocaleString('cs-CZ') } },
             series
         }, true);
+        chart.off('click');
+        chart.on('click', params => {
+            if (params.componentType === 'series' && Number.isInteger(params.dataIndex)) selectPeriodAtIndex(params.dataIndex);
+        });
+        const selectPeriodAtIndex = index => {
+            const period = visible[index];
+            if (!period) return;
+            allHistorySelectedPeriodKey = period.key;
+            tableWrap.querySelectorAll('tbody tr').forEach(row => row.classList.toggle('period-selected', row.dataset.periodKey === period.key));
+            chart.dispatchAction({ type: 'downplay', seriesIndex: 'all' });
+            chart.dispatchAction({ type: 'highlight', seriesIndex: 'all', dataIndex: index });
+            loadSelectedHistoryPeriod(period);
+        };
         tableWrap.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', () => selectPeriodAtIndex(Number(row.dataset.chartIndex)));
+            row.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectPeriodAtIndex(Number(row.dataset.chartIndex)); } });
             row.addEventListener('mouseenter', () => {
                 tableWrap.querySelectorAll('tbody tr').forEach(item => item.classList.remove('linked-highlight'));
                 row.classList.add('linked-highlight');
