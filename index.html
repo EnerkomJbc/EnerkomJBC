@@ -127,7 +127,7 @@
 
 
 
-        .footer-icon-btn { min-height:58px; display:flex; align-items:center; justify-content:center; border:1px solid #d5e2d5; border-radius:9px; background:#fff; color:#355b36; cursor:pointer; position:relative; box-shadow:0 2px 6px rgba(0,0,0,.04); }
+        .footer-icon-btn { width:56px; height:56px; min-height:56px; padding:0; display:flex; align-items:center; justify-content:center; border:1px solid #d5e2d5; border-radius:9px; background:#fff; color:#355b36; cursor:pointer; position:relative; box-shadow:0 2px 6px rgba(0,0,0,.04); }
         .footer-icon-btn:hover { background:#f3f8f3; border-color:var(--brand-green); }
         .footer-icon-btn svg { width:27px; height:27px; }
         .footer-icon-btn[title]:hover::after { content:attr(title); position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); z-index:30; background:#263b2b; color:#fff; padding:7px 10px; border-radius:5px; white-space:nowrap; font-size:12px; box-shadow:0 3px 10px rgba(0,0,0,.18); }
@@ -216,7 +216,7 @@
 
         /* Trvale viditelné kontakty a rozbalovací historie verzí */
         .contact-footer { max-width:1440px; margin:22px auto 8px; }
-        .contact-bar { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; }
+        .contact-bar { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)) 56px 56px; gap:10px; }
         .contact-link, .version-toggle { display:flex; align-items:center; gap:11px; min-width:0; padding:13px 14px; border:1px solid #d5e2d5; border-radius:9px; color:#355b36; text-decoration:none; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,.05); font:inherit; text-align:left; }
         .contact-link { transition:background .2s,border-color .2s; }
         .contact-link:hover, .version-toggle:hover { background:#f2f7f2; border-color:var(--brand-green); }
@@ -234,9 +234,9 @@
         .version-history li { display:grid; grid-template-columns:58px 1fr; gap:10px; padding:9px 0; border-bottom:1px solid #edf1ed; font-size:13px; }
         .version-history li:last-child { border-bottom:0; }
         .version-number { color:var(--brand-green-dark); font-weight:700; white-space:nowrap; }
-        @media(max-width:1050px) { .contact-bar { grid-template-columns:repeat(3,minmax(0,1fr)); } }
-        @media(max-width:850px) { .contact-bar { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-        @media(max-width:520px) { .contact-bar { grid-template-columns:1fr; } }
+        @media(max-width:1050px) { .contact-bar { grid-template-columns:repeat(2,minmax(0,1fr)) 56px 56px; } }
+        @media(max-width:850px) { .contact-bar { grid-template-columns:repeat(2,minmax(0,1fr)) 52px 52px; } .footer-icon-btn { width:52px; height:52px; min-height:52px; } }
+        @media(max-width:520px) { .contact-bar { grid-template-columns:repeat(2,minmax(0,1fr)) 48px 48px; gap:7px; } .footer-icon-btn { width:48px; height:48px; min-height:48px; } }
 
         .edit-guidance { margin-top:14px; border-top:1px solid #edf1ed; padding-top:12px; }
         .edit-guidance-toggle { display:inline-flex; align-items:center; gap:8px; border:1px solid #d5e2d5; border-radius:7px; background:#f8fbf8; color:#355b36; padding:9px 12px; font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
@@ -491,7 +491,7 @@
     </a>
     <button type="button" class="version-toggle" id="versionToggle" aria-expanded="false" aria-controls="versionPanel">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/><path d="M8 2h8"/></svg>
-      <span><strong>Verze aplikace</strong><small>Aktuální verze: 43</small></span>
+      <span><strong>Verze aplikace</strong><small>Aktuální verze: 44</small></span>
       <svg class="version-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
     </button>
     <button type="button" class="footer-icon-btn" id="editGuidanceOpen" title="Pokyny pro úpravy" aria-label="Pokyny pro úpravy">
@@ -504,6 +504,7 @@
   <section class="version-panel" id="versionPanel" aria-label="Historie verzí">
     <h3>Historie verzí</h3>
     <ol class="version-history">
+      <li><span class="version-number">Verze 44</span><span>Oprava automatického načítání dat, doplnění okna Zdroj dat a úprava ikon v zápatí na malé čtvercové ovladače.</span></li>
       <li><span class="version-number">Verze 43</span><span>Nová informační sekce Zdroj dat, ikony v zápatí, zjednodušený graf sdílení pod seznamem zdrojů a skrytí skupin s nulovým sdílením v popisech období.</span></li>
       <li><span class="version-number">Verze 42</span><span>Doplněno logo ChatGPT do pokynů, klikací výběr období v souhrnném grafu i tabulce a oddělený ukazatel celkové historicky sdílené energie.</span></li>
       <li><span class="version-number">Verze 41</span><span>Trvale zobrazený souhrnný graf sdílení všech skupin ENERKOM Jablonecko, výběr skupin, rozpad podle zdrojů a odběrů a propojení grafu s tabulkou.</span></li>
@@ -558,6 +559,36 @@
         <p><strong>Potvrzení:</strong> O nahrání na GitHub informuj jako o dokončeném pouze tehdy, když nástroj potvrdí úspěšné uložení. Pokud se publikace nepodaří, sděl to výslovně a neslibuj, že je aplikace na webu aktualizovaná.</p>
       </div>
     </div></div></div>
+
+
+<div class="info-modal" id="sourceDataModal" role="dialog" aria-modal="true" aria-labelledby="sourceDataTitle">
+  <div class="info-dialog">
+    <button type="button" class="info-close" data-close-info aria-label="Zavřít">×</button>
+    <h2 id="sourceDataTitle">Zdroj dat</h2>
+    <div class="source-flow" aria-label="Tok dat EDC, MARFY a ENERKOM">
+      <div class="source-step">
+        <div style="font-size:30px;font-weight:800;letter-spacing:-2px;color:#073b3a;">EDC</div>
+        <strong>EDC – Elektroenergetické datové centrum</strong>
+        <p>Evidence a vyhodnocování údajů o výrobě, spotřebě a sdílení elektřiny.</p>
+      </div>
+      <div class="source-step">
+        <div style="font-size:25px;font-weight:400;color:#222;">🔴 ECM <span style="font-size:17px;">marfy.</span></div>
+        <strong>MARFY – ECM System Solutions</strong>
+        <p>Přebírá data z EDC, zpracovává je, připravuje podklady k fakturaci, přehledy a CSV soubory.</p>
+      </div>
+      <div class="source-step">
+        <div style="font-size:24px;font-weight:800;color:#6c9d78;">ENERKOM</div>
+        <strong>Webový přehled ENERKOM Jablonecko</strong>
+        <p>Z dodaných CSV souborů vytváří naše přehledy, grafy a mapy sdílení energie.</p>
+      </div>
+    </div>
+    <h3 style="color:#263b2b;margin:22px 0 8px;">Jak vznikají data v přehledu ENERKOM Jablonecko</h3>
+    <p>Data zobrazovaná v našem přehledu mají svůj původ v systému <strong>EDC (Elektroenergetické datové centrum)</strong>, který eviduje a vyhodnocuje údaje o výrobě, spotřebě a sdílení elektrické energie.</p>
+    <p>Náš účet v systému <strong>MARFY – ECM System Solutions</strong> tato data z EDC přebírá a dále zpracovává. Slouží nám mimo jiné k přípravě podkladů pro fakturaci, tvorbě různých přehledů a exportu datových souborů ve formátu CSV.</p>
+    <p>Tyto CSV soubory následně využívá naše webová aplikace ENERKOM Jablonecko, která z nich vytváří přehledy a grafy sdílení elektrické energie.</p>
+    <div class="source-note"><strong>Tok dat:</strong> EDC → MARFY – ECM System Solutions → CSV soubory → webový přehled ENERKOM Jablonecko.</div>
+  </div>
+</div>
 
 <div class="history-modal" id="historyModal" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
   <div class="history-dialog">
@@ -966,8 +997,7 @@
         network = new vis.Network(container, data, options);
         rebuildEdgesOnly();
 
-        setTimeout(() => { network.setOptions({ physics: { enabled: false } }); }, 5000);
-        network.on("dragStart", function() { network.setOptions({ physics: { enabled: false } }); });
+        setTimeout(() => { network.setOptions({ physics: { enabled: false } }); }, 5000);        network.on("dragStart", function() { network.setOptions({ physics: { enabled: false } }); });
 
         statsData.sources = Object.keys(srcTotals).map(k => ({ name: k, count: srcConnections[k].size, sum: srcTotals[k] }));
         statsData.targets = Object.keys(dstTotals).map(k => ({ name: k, count: dstConnections[k].size, sum: dstTotals[k] }));
@@ -997,7 +1027,8 @@
                 width: style.width,
                 color: { color: style.color, highlight: '#749c75' },
                 smooth: { type: 'dynamic' }
-            });        });
+            });
+        });
 
         edgesDataSet.add(edgesArray);
     }
@@ -1333,11 +1364,17 @@ initAndRenderGeoMap = function() {
     document.getElementById('historyBtn').addEventListener('click', openHistory);
     const editGuidanceModal = document.getElementById('editGuidanceModal');
     const sourceDataModal = document.getElementById('sourceDataModal');
-    document.getElementById('editGuidanceOpen').addEventListener('click', () => editGuidanceModal.style.display='flex');
-    document.getElementById('sourceDataOpen').addEventListener('click', () => sourceDataModal.style.display='flex');
-    document.querySelectorAll('[data-close-info]').forEach(button => button.addEventListener('click', () => { editGuidanceModal.style.display='none'; sourceDataModal.style.display='none'; }));
-    [editGuidanceModal, sourceDataModal].forEach(modal => modal.addEventListener('click', event => { if(event.target===modal) modal.style.display='none'; }));
-    document.addEventListener('keydown', event => { if(event.key==='Escape'){ editGuidanceModal.style.display='none'; sourceDataModal.style.display='none'; } });
+    document.getElementById('editGuidanceOpen')?.addEventListener('click', () => { if(editGuidanceModal) editGuidanceModal.style.display='flex'; });
+    document.getElementById('sourceDataOpen')?.addEventListener('click', () => { if(sourceDataModal) sourceDataModal.style.display='flex'; });
+    document.querySelectorAll('[data-close-info]').forEach(button => button.addEventListener('click', () => {
+        if(editGuidanceModal) editGuidanceModal.style.display='none';
+        if(sourceDataModal) sourceDataModal.style.display='none';
+    }));
+    [editGuidanceModal, sourceDataModal].filter(Boolean).forEach(modal => modal.addEventListener('click', event => { if(event.target===modal) modal.style.display='none'; }));
+    document.addEventListener('keydown', event => { if(event.key==='Escape'){
+        if(editGuidanceModal) editGuidanceModal.style.display='none';
+        if(sourceDataModal) sourceDataModal.style.display='none';
+    }});
     document.getElementById('allHistoryGraphBtn').addEventListener('click', () => {
         document.getElementById('all-history-graph-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
