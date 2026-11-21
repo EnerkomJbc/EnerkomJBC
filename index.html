@@ -997,4 +997,933 @@
         const data = { nodes: nodesDataSet, edges: edgesDataSet };
         const options = {
             physics: { barnesHut: { gravitationalConstant: -3500, springLength: 160 } },
-            edges: { font: { size: 10, align: 'top' } }
+            edges: { font: { size: 10, align: 'top' } }        };
+
+        network = new vis.Network(container, data, options);
+        rebuildEdgesOnly();
+
+        setTimeout(() => { network.setOptions({ physics: { enabled: false } }); }, 5000);
+        network.on("dragStart", function() { network.setOptions({ physics: { enabled: false } }); });
+
+        statsData.sources = Object.keys(srcTotals).map(k => ({ name: k, count: srcConnections[k].size, sum: srcTotals[k] }));
+        statsData.targets = Object.keys(dstTotals).map(k => ({ name: k, count: dstConnections[k].size, sum: dstTotals[k] }));
+
+        renderTable('sources', statsData.sources);
+        renderTable('targets', statsData.targets);
+
+        if (currentView === 'sankey') buildSankeyChart();
+        if (currentView === 'geomap') initAndRenderGeoMap();
+    }
+
+    function rebuildEdgesOnly() {
+        if (!network) return;
+        edgesDataSet.clear();
+
+        let edgesArray = [];
+        Object.keys(globalAggregatedEdges).forEach(key => {
+            let [src, dst] = key.split('|||');
+            let totalVal = globalAggregatedEdges[key];
+            let style = getFlowStyle(totalVal);
+
+            edgesArray.push({
+                from: src,
+                to: dst,
+                label: totalVal.toFixed(2) + ' kWh',
+                arrows: 'to',
+                width: style.width,
+                color: { color: style.color, highlight: '#749c75' },
+                smooth: { type: 'dynamic' }
+            });
+        });
+
+        edgesDataSet.add(edgesArray);
+    }
+
+        function buildSankeyChart() {
+        const container = document.getElementById('sankey-canvas');
+        if (Object.keys(globalAggregatedEdges).length === 0) return;
+
+        if (!sankeyChart) {
+            sankeyChart = echarts.init(container);
+        } else {
+            sankeyChart.resize();
+        }
+
+        const hideZero = document.getElementById('hideZeroFlows').checked;
+        let nodesMap = new Map();
+        let nodeTotals = {};
+        let linksArray = [];
+
+        Object.keys(globalAggregatedEdges).forEach(key => {
+            let [src, dst] = key.split('|||');
+            let totalVal = globalAggregatedEdges[key];
+
+            if (hideZero && totalVal <= 0) return;
+
+            let srcNodeId = 'Zdroj: ' + src;
+            let dstNodeId = 'Odběr: ' + dst;
+
+            nodeTotals[srcNodeId] = (nodeTotals[srcNodeId] || 0) + totalVal;
+            nodeTotals[dstNodeId] = (nodeTotals[dstNodeId] || 0) + totalVal;
+
+            if (!nodesMap.has(srcNodeId)) {
+                nodesMap.set(srcNodeId, {
+                    name: srcNodeId,
+                    itemStyle: { color: '#DB4436', borderColor: '#b91c1c' }
+                });
+            }
+            if (!nodesMap.has(dstNodeId)) {
+                nodesMap.set(dstNodeId, {
+                    name: dstNodeId,
+                    itemStyle: { color: '#749c75', borderColor: '#5b7f5c' }
+                });
+            }
+
+            let style = getFlowStyle(totalVal);
+
+            linksArray.push({
+                source: srcNodeId,
+                target: dstNodeId,
+                value: Number(totalVal.toFixed(2)),
+                lineStyle: { color: style.color, opacity: 0.48 }
+            });
+        });
+
+        const option = {
+            tooltip: {
+                trigger: 'item',
+                triggerOn: 'mousemove',
+                formatter: function(params) {
+                    if (params.dataType === 'edge') {
+                        let s = params.data.source.replace('Zdroj: ', '');
+                        let t = params.data.target.replace('Odběr: ', '');
+                        return `<strong>${s}</strong><br/>➝ <strong>${t}</strong><br/>Sdíleno: <strong>${params.data.value.toFixed(2)} kWh</strong>`;
+                    } else {
+                        let cleanName = params.name.replace(/^(Zdroj: |Odběr: )/, '');
+                        return `<strong>${cleanName}</strong><br/>Celkem: <strong>${params.value.toFixed(2)} kWh</strong>`;
+                    }
+                }
+            },
+            series: [
+                {
+                    type: 'sankey',
+                    left: '2%',
+                    right: '28%',
+                    top: '4%',
+                    bottom: '8%',
+                    nodeWidth: 18,
+                    nodeGap: 12,
+                    layoutIterations: 32,
+                    emphasis: { focus: 'adjacency' },
+                    data: Array.from(nodesMap.values()),
+                    links: linksArray,
+                    label: {
+                        color: '#2c3e50',
+                        fontSize: 11,
+                        fontWeight: 'normal',
+                        formatter: function(params) {
+                            let cleanName = params.name.replace(/^(Zdroj: |Odběr: )/, '');
+                            let sum = nodeTotals[params.name] || 0;
+                            return `${cleanName} (${sum.toFixed(2)} kWh)`;
+                        }
+                    },
+                    lineStyle: { curveness: 0.5 }
+                }
+            ]
+        };
+
+        sankeyChart.setOption(option, true);
+    }
+
+    function initAndRenderGeoMap() {
+        if (!leafletMap) {
+            const esriStreets = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri'
+            });
+            const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri'
+            });
+
+            leafletMap = L.map('geomap-container', {
+                center: [50.73, 15.16],
+                zoom: 11,
+                layers: [esriStreets]
+            });
+
+            L.control.layers({
+                "Uliční přehledná mapa": esriStreets,
+                "Satelitní snímky": esriSat
+            }, null, { collapsed: false }).addTo(leafletMap);
+
+            mapLayersGroup = L.layerGroup().addTo(leafletMap);
+        } else {
+            leafletMap.invalidateSize();
+            mapLayersGroup.clearLayers();
+        }
+
+        updateMapLegend();
+        mapMarkersByNode = {};
+        const hideZero = document.getElementById('hideZeroFlows').checked;
+        let unmapped = new Set();
+        let bounds = [];
+
+        if (Object.keys(globalAggregatedEdges).length === 0) {
+            KML_POINTS.forEach(pt => {
+                if (pt.name.includes("SteelForm")) return;
+                let isSrc = pt.type === 'src';
+                let marker = L.marker([pt.lat, pt.lon], {
+                    icon: isSrc ? RED_PIN_ICON : BLUE_PIN_ICON
+                }).bindPopup(`<strong>${pt.name}</strong><br/>(${isSrc ? 'FVE Zdroj' : 'Odběrné místo'})`);
+                marker.addTo(mapLayersGroup);
+                if (pt.lat > 50.5) bounds.push([pt.lat, pt.lon]);
+            });
+            if (bounds.length > 0) leafletMap.fitBounds(bounds, { padding: [30, 30] });
+            return;
+        }
+
+        let activeNodes = new Map();
+
+        Object.keys(globalAggregatedEdges).forEach(key => {
+            let [src, dst] = key.split('|||');
+            let totalVal = globalAggregatedEdges[key];
+
+            let srcPt = findCoordsForNode(src);
+            let dstPt = findCoordsForNode(dst);
+
+            if (!srcPt) unmapped.add(src);
+            if (!dstPt) unmapped.add(dst);
+
+            if (srcPt) activeNodes.set(src, { pt: srcPt, isSrc: true, total: (activeNodes.get(src)?.total || 0) + totalVal });
+            if (dstPt) activeNodes.set(dst, { pt: dstPt, isSrc: false, total: (activeNodes.get(dst)?.total || 0) + totalVal });
+
+            if (!srcPt || !dstPt) return;
+            if (hideZero && totalVal <= 0) return;
+
+            let style = getFlowStyle(totalVal);
+            let lat2 = dstPt.lat;
+            let lon2 = dstPt.lon;
+            if (srcPt.lat === dstPt.lat && srcPt.lon === dstPt.lon) {
+                lat2 += 0.0003;
+                lon2 += 0.0003;
+            }
+
+            let line = L.polyline([[srcPt.lat, srcPt.lon], [lat2, lon2]], {
+                color: style.color,
+                weight: style.width,
+                opacity: 0.78
+            }).bindTooltip(`<strong>${src}</strong> ➝ <strong>${dst}</strong><br/>Sdíleno: <strong>${totalVal.toFixed(2)} kWh</strong>`, { sticky: true });
+
+            line.addTo(mapLayersGroup);
+        });
+
+        activeNodes.forEach((info, nodeName) => {
+            let { pt, isSrc, total } = info;
+            let lat = pt.lat + (isSrc ? 0 : 0.00015);
+            let lon = pt.lon + (isSrc ? 0 : 0.00015);
+
+            let marker = L.marker([lat, lon], { icon: isSrc ? RED_PIN_ICON : BLUE_PIN_ICON })
+                .bindPopup(`<strong>${nodeName}</strong><br/>Lokace: ${pt.name}<br/>Celkem: <strong>${total.toFixed(2)} kWh</strong>`);
+
+            marker.addTo(mapLayersGroup);
+            mapMarkersByNode[nodeName] = marker;
+            if (lat > 50.5) bounds.push([lat, lon]);
+        });
+
+        if (bounds.length > 0) {
+            leafletMap.fitBounds(bounds, { padding: [30, 30] });
+        }
+
+        const infoEl = document.getElementById('unmapped-info');
+        if (unmapped.size > 0) {
+            infoEl.innerText = `Pozn.: Bez přesných GPS v KML (${unmapped.size}): ${Array.from(unmapped).join(', ')}`;
+        } else {
+            infoEl.innerText = '';
+        }
+    }
+
+    function renderTable(type, dataList) {
+        const tbody = document.querySelector(`#${type}Table tbody`);
+        tbody.innerHTML = '';
+        let totalCount = 0;
+        let totalSum = 0;
+
+        dataList.forEach(item => {
+            totalCount += item.count;
+            totalSum += item.sum;
+            let tr = document.createElement('tr');
+            tr.onclick = () => {
+                if (currentView === 'network' && network) {
+                    network.focus(item.name, { scale: 1.1, animation: true });
+                    network.selectNodes([item.name]);
+                } else if (currentView === 'sankey' && sankeyChart) {
+                    let prefix = type === 'sources' ? 'Zdroj: ' : 'Odběr: ';
+                    sankeyChart.dispatchAction({ type: 'highlight', name: prefix + item.name });
+                } else if (currentView === 'geomap' && leafletMap && mapMarkersByNode[item.name]) {
+                    let m = mapMarkersByNode[item.name];
+                    leafletMap.setView(m.getLatLng(), 14);
+                    m.openPopup();
+                }
+            };
+            tr.innerHTML = `<td><strong>${item.name}</strong></td><td>${item.count}</td><td>${item.sum.toFixed(2)}</td>`;
+            tbody.appendChild(tr);
+        });
+
+        if (dataList.length > 0) {
+            let trTotal = document.createElement('tr');
+            trTotal.className = 'total-row';
+            trTotal.innerHTML = `<td>CELKEM ZA VŠECHNY (${dataList.length})</td><td>${totalCount}</td><td>${totalSum.toFixed(2)} kWh</td>`;
+            tbody.appendChild(trTotal);
+        }
+    }
+
+    function sortTable(type, colIdx) {
+        let dataList = type === 'sources' ? statsData.sources : statsData.targets;
+        let dir = 'asc';
+        if (currentSort.table === type && currentSort.column === colIdx) {
+            dir = currentSort.direction === 'asc' ? 'desc' : 'asc';
+        }
+        currentSort = { table: type, column: colIdx, direction: dir };
+
+        dataList.sort((a, b) => {
+            let valA, valB;
+            if (colIdx === 0) { valA = a.name; valB = b.name; }
+            else if (colIdx === 1) { valA = a.count; valB = b.count; }
+            else { valA = a.sum; valB = b.sum; }
+            if (typeof valA === 'string') return dir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+            return dir === 'asc' ? valA - valB : valB - valA;
+        });
+
+        const ths = document.querySelectorAll(`#${type}Table th`);
+        ths.forEach((th, idx) => {
+            let arrow = th.querySelector('.th-sort-arrow');
+            arrow.innerText = idx === colIdx ? (dir === 'asc' ? ' ▲' : ' ▼') : '';
+        });
+        renderTable(type, dataList);
+    }
+
+// === DOPLNĚK: FILTROVÁNÍ PO KLIKNUTÍ NA ŠPENDLÍK V MAPĚ ===
+let activeMapFilter = null;
+
+function togglePinFilter(nodeName) {
+    if (activeMapFilter === nodeName) {
+        resetPinFilter();
+        return;
+    }
+    activeMapFilter = nodeName;
+    const connected = new Set([nodeName]);
+
+    mapLayersGroup.eachLayer(layer => {
+        if (layer instanceof L.Polyline) {
+            const tip = layer.getTooltip()?.getContent() || '';
+            const isMatch = tip.includes(`>${nodeName}<`);
+            if (isMatch) {
+                layer.setStyle({ opacity: 0.95, weight: layer.options.weight + 1.5 });
+                layer.bringToFront();
+                const matches = [...tip.matchAll(/<strong>(.*?)<\/strong>/g)];
+                matches.forEach(m => connected.add(m[1]));
+            } else {
+                layer.setStyle({ opacity: 0.08 });
+            }
+        }
+    });
+
+    Object.entries(mapMarkersByNode).forEach(([name, marker]) => {
+        marker.setOpacity(connected.has(name) ? 1 : 0.25);
+        if (name === nodeName) marker.openPopup();
+    });
+}
+
+function resetPinFilter() {
+    activeMapFilter = null;
+    mapLayersGroup.eachLayer(layer => {
+        if (layer instanceof L.Polyline) layer.setStyle({ opacity: 0.78 });
+    });
+    Object.values(mapMarkersByNode).forEach(marker => {
+        marker.setOpacity(1);
+        marker.closePopup();
+    });
+}
+
+const origInitMap = initAndRenderGeoMap;
+initAndRenderGeoMap = function() {
+    origInitMap();
+    activeMapFilter = null;
+    leafletMap.off('click', resetPinFilter).on('click', resetPinFilter);
+    Object.entries(mapMarkersByNode).forEach(([name, marker]) => {
+        marker.off('click').on('click', (e) => {
+            L.DomEvent.stopPropagation(e);
+            togglePinFilter(name);
+        });
+    });
+};
+
+
+
+    // === Historie CSV z veřejné složky Google Disku ===
+    // Po nasazení Apps Scriptu vlož jeho URL do HISTORY_API_URL.
+    const HISTORY_API_URL = 'https://script.google.com/macros/s/AKfycbyIYLMvyK1SsOxZG3jmvXJmIgoOzsoEjQoIjyZ5ykkOBfId1EDJkDOnwC91IONx8lPx/exec';
+    const historyModal = document.getElementById('historyModal');
+    const historyStatus = document.getElementById('historyStatus');
+    const historyList = document.getElementById('historyList');
+    let historyRequestCounter = 0;
+
+    document.getElementById('historyBtn').addEventListener('click', openHistory);
+    const editGuidanceModal = document.getElementById('editGuidanceModal');
+    const sourceDataModal = document.getElementById('sourceDataModal');
+    document.getElementById('editGuidanceOpen')?.addEventListener('click', () => { if(editGuidanceModal) editGuidanceModal.style.display='flex'; });
+    document.getElementById('sourceDataOpen')?.addEventListener('click', () => { if(sourceDataModal) sourceDataModal.style.display='flex'; });
+    document.querySelectorAll('[data-close-info]').forEach(button => button.addEventListener('click', () => {
+        if(editGuidanceModal) editGuidanceModal.style.display='none';
+        if(sourceDataModal) sourceDataModal.style.display='none';
+    }));
+    [editGuidanceModal, sourceDataModal].filter(Boolean).forEach(modal => modal.addEventListener('click', event => { if(event.target===modal) modal.style.display='none'; }));
+    document.addEventListener('keydown', event => { if(event.key==='Escape'){
+        if(editGuidanceModal) editGuidanceModal.style.display='none';
+        if(sourceDataModal) sourceDataModal.style.display='none';
+    }});
+    document.getElementById('allHistoryGraphBtn').addEventListener('click', () => {
+        document.getElementById('all-history-graph-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    let allHistorySummaries = [];
+    let allHistoryFilesByPeriod = new Map();
+    let allHistorySelectedPeriodKey = null;
+    let allHistoryChartMode = 'total';
+    let allHistorySelectedGroups = ['JANOV', 'PALACKÉHO', 'ENERKOM JBC 01'];
+    document.querySelectorAll('.all-history-mode').forEach(button => button.addEventListener('click', () => {
+        allHistoryChartMode = button.dataset.historyMode;
+        document.querySelectorAll('.all-history-mode').forEach(item => item.classList.toggle('active', item === button));
+        renderAllHistoryChart();
+    }));
+    document.querySelectorAll('#all-history-groups input[type="checkbox"]').forEach(input => input.addEventListener('change', () => {
+        allHistorySelectedGroups = Array.from(document.querySelectorAll('#all-history-groups input:checked')).map(item => item.value);
+        allHistorySelectedPeriodKey = null;
+        renderAllHistoryChart();
+    }));
+    document.getElementById('historyClose').addEventListener('click', closeHistory);
+    historyModal.addEventListener('click', e => { if (e.target === historyModal) closeHistory(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHistory(); });
+    window.addEventListener('DOMContentLoaded', () => {
+        loadLatestHistoryPeriod();
+        loadAllEnerkomHistoryGraph();
+    });
+
+    function closeHistory() { historyModal.style.display = 'none'; }
+
+    let historyFilesCache = [];
+    document.getElementById('historyApply').addEventListener('click', applyHistorySelection);
+    document.getElementById('historySelectAll').addEventListener('click', () => document.querySelectorAll('.history-select').forEach(x => x.checked = true));
+    document.getElementById('historyClear').addEventListener('click', () => document.querySelectorAll('.history-select').forEach(x => x.checked = false));
+
+    function openHistory() {
+        historyModal.style.display = 'flex';
+        historyList.innerHTML = '';
+        if (!HISTORY_API_URL.startsWith('https://script.google.com/macros/s/')) {
+            historyStatus.textContent = 'Historie zatím není nakonfigurovaná. Je potřeba nasadit přiložený Google Apps Script a vložit jeho URL do souboru HTML.';
+            return;
+        }
+        historyStatus.textContent = 'Načítám seznam období…';
+        historyJsonp('list', {}, data => {
+            if (!data || !data.ok) { historyStatus.textContent = data?.error || 'Seznam období se nepodařilo načíst.'; return; }
+            historyFilesCache = (Array.isArray(data.files) ? data.files : []).slice()
+                .sort((a, b) => periodEndTimestamp(b.name) - periodEndTimestamp(a.name));
+            if (!historyFilesCache.length) { historyStatus.textContent = 'Ve složce zatím nejsou žádná období.'; return; }
+
+            const groups = new Map();
+            historyFilesCache.forEach((file, index) => {
+                const group = extractGroupFromFilename(file.name);
+                if (!groups.has(group)) groups.set(group, []);
+                groups.get(group).push({ file, index });
+            });
+            const groupNames = Array.from(groups.keys()).sort((a, b) => {
+                if (a === 'ENERKOM JBC 01') return -1;
+                if (b === 'ENERKOM JBC 01') return 1;
+                return a.localeCompare(b, 'cs');
+            });
+
+            historyStatus.textContent = `Dostupná období: ${historyFilesCache.length} ve ${groups.size} skupinách.`;
+            groupNames.forEach(groupName => {
+                const items = groups.get(groupName);
+                const isPrimary = groupName === 'ENERKOM JBC 01';
+                const section = document.createElement('section');
+                section.className = `history-group${isPrimary ? ' primary' : ' collapsed'}`;
+
+                const header = document.createElement('div');
+                header.className = 'history-group-header';
+                const toggle = document.createElement('button');
+                toggle.type = 'button';
+                toggle.className = 'history-group-toggle';
+                toggle.setAttribute('aria-expanded', isPrimary ? 'true' : 'false');
+                const arrow = document.createElement('span');
+                arrow.className = 'history-group-arrow';
+                arrow.textContent = '▾';
+                const title = document.createElement('span');
+                title.textContent = groupName;
+                toggle.append(arrow, title);
+                toggle.addEventListener('click', () => {
+                    section.classList.toggle('collapsed');
+                    toggle.setAttribute('aria-expanded', String(!section.classList.contains('collapsed')));
+                });
+
+                const count = document.createElement('span');
+                count.className = 'history-group-count';
+                count.textContent = `${items.length} ${items.length === 1 ? 'období' : 'období'}`;
+                header.append(toggle, count);
+                section.appendChild(header);
+
+                const tools = document.createElement('div');
+                tools.className = 'history-group-tools';
+                const selectGroup = document.createElement('button');
+                selectGroup.type = 'button';
+                selectGroup.textContent = 'Vybrat všechna období skupiny';
+                selectGroup.addEventListener('click', () => {
+                    items.forEach(item => {
+                        const checkbox = historyList.querySelector(`.history-select[value="${item.index}"]`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                });
+                const clearGroup = document.createElement('button');
+                clearGroup.type = 'button';
+                clearGroup.textContent = 'Zrušit výběr skupiny';
+                clearGroup.addEventListener('click', () => {
+                    items.forEach(item => {
+                        const checkbox = historyList.querySelector(`.history-select[value="${item.index}"]`);
+                        if (checkbox) checkbox.checked = false;
+                    });
+                });
+                tools.append(selectGroup, clearGroup);
+                section.appendChild(tools);
+
+                const periods = document.createElement('div');
+                periods.className = 'history-group-periods';
+                items.forEach(({ file, index }) => {
+                    const row = document.createElement('label');
+                    row.className = 'history-file';
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'history-select';
+                    checkbox.value = String(index);
+                    const name = document.createElement('div');
+                    name.className = 'history-file-name';
+                    name.textContent = periodLabel(file.name);
+                    row.append(checkbox, name);
+                    periods.appendChild(row);
+                });
+                section.appendChild(periods);
+                historyList.appendChild(section);
+            });
+        });
+    }
+
+    function extractGroupFromFilename(filename) {
+        const name = String(filename || '');
+        const match = name.match(/sk-(.+?)_za_obdobi_/i);
+        if (!match) return 'OSTATNÍ SKUPINY';
+        const raw = match[1].replace(/\.csv$/i, '').replace(/_/g, ' ').trim();
+        const normalized = normalizeStr(raw).toLowerCase();
+        if (normalized.includes('enerkomjbc') || normalized.includes('enerkom jbc')) return 'ENERKOM JBC 01';
+        if (normalized.includes('janov')) return 'JANOV';
+        if (normalized.includes('palackeho')) return 'PALACKÉHO';
+        return raw.toLocaleUpperCase('cs-CZ');
+    }
+
+    function applyHistorySelection() {
+        const indexes = Array.from(document.querySelectorAll('.history-select:checked')).map(x => Number(x.value));
+        if (!indexes.length) { historyStatus.textContent = 'Nejdřív vyber alespoň jedno období.'; return; }
+        const selected = indexes.map(i => historyFilesCache[i]).filter(Boolean);
+        const mode = document.querySelector('input[name="historyMode"]:checked')?.value || 'merge';
+        const apply = document.getElementById('historyApply');
+        apply.disabled = true; apply.textContent = 'Načítám vybraná období…';
+        historyStatus.textContent = `Načítám ${selected.length} ${selected.length === 1 ? 'období' : 'období'}…`;
+        Promise.all(selected.map(file => fetchHistoryCsv(file))).then(results => {
+            apply.disabled = false; apply.textContent = 'Zobrazit vybraná období';
+            const failed = results.find(x => !x.ok);
+            if (failed) { historyStatus.textContent = failed.error || 'Některé období se nepodařilo načíst.'; return; }
+            if (mode === 'merge') {
+                const matrices = results.map(x => x.matrix).filter(x => x && x.length > 1);
+                if (!matrices.length) { historyStatus.textContent = 'Ve vybraných souborech nejsou žádná data.'; return; }
+                const merged = matrices[0].slice();
+                matrices.slice(1).forEach(matrix => merged.push(...matrix.slice(1)));
+                document.getElementById('history-compare').innerHTML = ''; document.getElementById('history-compare').style.display = 'none';
+                document.getElementById('file-name').textContent = `Sloučená období: ${selected.map(f => periodLabel(f.name)).join('; ')}`;
+                processRawMatrix(merged);
+            } else {
+                renderHistoryComparison(results);
+                const newest = results.slice().sort((a,b) => periodEndTimestamp(b.file.name) - periodEndTimestamp(a.file.name))[0];
+                document.getElementById('file-name').textContent = `Porovnání ${results.length} období – mapa zobrazuje nejnovější: ${periodLabel(newest.file.name)}`;
+                processRawMatrix(newest.matrix);
+            }
+            closeHistory();
+        }).catch(error => {
+            apply.disabled = false; apply.textContent = 'Zobrazit vybraná období';
+            historyStatus.textContent = error?.message || 'Při načítání období nastala chyba.';
+        });
+    }
+
+    function fetchHistoryCsv(file) {
+        return new Promise(resolve => {
+            historyJsonp('get', { id: file.id }, data => {
+                if (!data || !data.ok || typeof data.content !== 'string') { resolve({ok:false, error:data?.error || `Soubor ${periodLabel(file.name)} se nepodařilo načíst.`}); return; }
+                Papa.parse(data.content, { skipEmptyLines:true, complete: parsed => resolve({ok:true, file, matrix:parsed.data}) });
+            });
+        });
+    }
+
+    function renderHistoryComparison(results) {
+        const summaries = results.map(result => {
+            const matrix = result.matrix || [];
+            const headers = (matrix[0] || []).map(h => String(h).trim());
+            let idxSrc = headers.findIndex(h => h.toLowerCase().includes('eand'));
+            let idxDst = headers.findIndex(h => h.toLowerCase().includes('eano'));
+            let idxVal = headers.findIndex(h => ['množství','energie','kwh','sdílené'].some(term => h.toLowerCase().includes(term)));
+            if (idxVal === -1) idxVal = Math.max(0, headers.length - 1);
+            let total = 0; const sources = new Set(); const targets = new Set();
+            matrix.slice(1).forEach(row => {
+                if (idxSrc >= 0 && row[idxSrc]) sources.add(String(row[idxSrc]).trim());
+                if (idxDst >= 0 && row[idxDst]) targets.add(String(row[idxDst]).trim());
+                const value = parseFloat(String(row[idxVal] ?? '').replace(/\s/g, '').replace(',', '.'));
+                if (Number.isFinite(value)) total += value;
+            });
+            return {
+                label: periodLabel(result.file.name),
+                end: periodEndTimestamp(result.file.name),
+                total,
+                sources: sources.size,
+                targets: targets.size,
+                records: Math.max(0, matrix.length - 1)
+            };
+        }).sort((a, b) => a.end - b.end);
+
+        const rows = summaries.map(item =>
+            `<tr><td>${item.label}</td><td>${item.total.toLocaleString('cs-CZ',{minimumFractionDigits:2,maximumFractionDigits:2})} kWh</td><td>${item.sources}</td><td>${item.targets}</td><td>${item.records}</td></tr>`
+        ).join('');
+
+        const container = document.getElementById('history-compare');
+        container.style.display = 'block';
+        container.innerHTML = `<h3>Porovnání vybraných období</h3><h4>Sdílení v čase</h4><div id="history-share-chart" class="history-compare-chart" role="img" aria-label="Graf celkového sdílení energie v jednotlivých vybraných obdobích"></div><table><thead><tr><th>Období</th><th>Celkem sdíleno</th><th>Zdrojů</th><th>Odběrných míst</th><th>Počet záznamů</th></tr></thead><tbody>${rows}</tbody></table>`;
+
+        const chartElement = document.getElementById('history-share-chart');
+        if (window.echarts && chartElement) {
+            const previousChart = echarts.getInstanceByDom(chartElement);
+            if (previousChart) previousChart.dispose();
+            const chart = echarts.init(chartElement);
+            chart.setOption({
+                animation: true,
+                tooltip: {
+                    trigger: 'axis',
+                    valueFormatter: value => `${Number(value).toLocaleString('cs-CZ', {minimumFractionDigits: 2, maximumFractionDigits: 2})} kWh`
+                },
+                grid: { left: 66, right: 24, top: 22, bottom: 58 },
+                xAxis: {
+                    type: 'category',
+                    data: summaries.map(item => item.label),
+                    axisLabel: { interval: 0, rotate: summaries.length > 5 ? 35 : 0, hideOverlap: true }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'kWh',
+                    nameTextStyle: { padding: [0, 0, 0, 8] },
+                    axisLabel: { formatter: value => Number(value).toLocaleString('cs-CZ') },
+                    min: 0
+                },
+                series: [{
+                    name: 'Celkem sdíleno',
+                    type: 'line',
+                    smooth: false,
+                    symbol: 'circle',
+                    symbolSize: 9,
+                    lineStyle: { width: 3 },
+                    data: summaries.map(item => Number(item.total.toFixed(3))),
+                    areaStyle: { opacity: 0.10 }
+                }]
+            });
+            setTimeout(() => chart.resize(), 0);
+        } else {
+            chartElement.textContent = 'Graf se nepodařilo načíst.';
+        }
+    }
+
+
+    // Načte historii všech skupin a připraví společný přehled ENERKOM Jablonecko.
+    function loadAllEnerkomHistoryGraph() {
+        const status = document.getElementById('all-history-graph-status');
+        const tableWrap = document.getElementById('all-history-table-wrap');
+        status.textContent = 'Načítám seznam historických období všech skupin…';
+        tableWrap.innerHTML = '';
+        historyJsonp('list', {}, data => {
+            if (!data || !data.ok) {
+                status.textContent = data?.error || 'Seznam historických souborů se nepodařilo načíst.';
+                return;
+            }
+            const files = (Array.isArray(data.files) ? data.files : [])
+                .filter(file => ['JANOV', 'PALACKÉHO', 'ENERKOM JBC 01'].includes(extractGroupFromFilename(file.name)))
+                .sort((a, b) => periodEndTimestamp(a.name) - periodEndTimestamp(b.name));
+            if (!files.length) {
+                status.textContent = 'Pro skupiny JANOV, PALACKÉHO ani ENERKOM JBC 01 nebyla nalezena historická data.';
+                return;
+            }
+            status.textContent = `Načítám ${files.length} historických souborů ze všech skupin…`;
+            Promise.all(files.map(file => fetchHistoryCsv(file))).then(results => {
+                const successful = results.filter(result => result.ok);
+                if (!successful.length) {
+                    status.textContent = results.find(result => result.error)?.error || 'Historická data se nepodařilo načíst.';
+                    return;
+                }
+                const grouped = new Map();
+                successful.forEach(result => {
+                    const group = extractGroupFromFilename(result.file.name);
+                    const period = extractPeriodFromFilename(result.file.name);
+                    const key = period ? `${period.from.getFullYear()}-${period.from.getMonth()+1}-${period.from.getDate()}_${period.to.getFullYear()}-${period.to.getMonth()+1}-${period.to.getDate()}` : periodLabel(result.file.name);
+                    if (!grouped.has(key)) grouped.set(key, { key, label: periodLabel(result.file.name), end: periodEndTimestamp(result.file.name), byGroup: {}, filesByGroup: {} });
+                    grouped.get(key).byGroup[group] = summarizeHistoryMatrix(result.matrix, result.file.name);
+                    grouped.get(key).filesByGroup[group] = result.file;
+                });
+                allHistorySummaries = Array.from(grouped.values()).sort((a,b) => a.end - b.end);
+                if (!allHistorySelectedPeriodKey && allHistorySummaries.length) allHistorySelectedPeriodKey = allHistorySummaries[allHistorySummaries.length - 1].key;
+                const allTimeTotal = successful.reduce((sum, result) => sum + summarizeHistoryMatrix(result.matrix, result.file.name).total, 0);
+                document.getElementById('kpi-all-time-kwh').textContent = `${allTimeTotal.toLocaleString('cs-CZ', {minimumFractionDigits:2, maximumFractionDigits:2})} kWh`;
+                renderAllHistoryChart();
+                const failedCount = results.length - successful.length;
+                status.textContent = `Načteno ${successful.length} souborů ze ${files.length}; souhrn obsahuje ${allHistorySummaries.length} období ze skupin JANOV, PALACKÉHO a ENERKOM JBC 01.${failedCount ? ` Pozor: ${failedCount} souborů se nepodařilo načíst.` : ''}`;
+            }).catch(error => {
+                status.textContent = error?.message || 'Při načítání historických dat nastala chyba.';
+            });
+        });
+    }
+
+    function loadSelectedHistoryPeriod(period) {
+        const groups = allHistorySelectedGroups.filter(group => period.filesByGroup[group]);
+        if (!groups.length) return;
+        const status = document.getElementById('all-history-graph-status');
+        status.textContent = `Načítám období ${period.label} pro skupiny ${groups.join(', ')}…`;
+        Promise.all(groups.map(group => fetchHistoryCsv(period.filesByGroup[group]))).then(results => {
+            const failed = results.find(result => !result.ok);
+            if (failed) { status.textContent = failed.error || 'Vybrané období se nepodařilo načíst.'; return; }
+            const matrices = results.map(result => result.matrix).filter(matrix => matrix && matrix.length > 1);
+            if (!matrices.length) { status.textContent = `Pro období ${period.label} nejsou k dispozici datové řádky.`; return; }
+            const merged = matrices[0].slice();
+            matrices.slice(1).forEach(matrix => merged.push(...matrix.slice(1)));
+            document.getElementById('history-compare').innerHTML = '';
+            document.getElementById('history-compare').style.display = 'none';
+            document.getElementById('file-name').textContent = `Období: ${period.label} · Skupiny: ${groups.join(', ')}`;
+            processRawMatrix(merged);
+            status.textContent = `Vybráno období ${period.label}. Data mapy a tabulek odpovídají skupinám: ${groups.join(', ')}.`;
+        }).catch(error => {
+            status.textContent = error?.message || `Období ${period.label} se nepodařilo načíst.`;
+        });
+    }
+
+    function summarizeHistoryMatrix(matrix, filename) {
+        const headers = (matrix[0] || []).map(header => String(header).trim());
+        const idxSrc = headers.findIndex(header => header.toLowerCase().includes('eand'));
+        const idxDst = headers.findIndex(header => header.toLowerCase().includes('eano'));
+        let idxVal = headers.findIndex(header => ['množství','energie','kwh','sdílené'].some(term => header.toLowerCase().includes(term)));
+        if (idxVal === -1) idxVal = Math.max(0, headers.length - 1);
+        let total = 0;
+        const sources = new Set();
+        const targets = new Set();
+        const bySource = {};
+        const byTarget = {};
+        let records = 0;
+        (matrix || []).slice(1).forEach(row => {
+            const sourceRaw = idxSrc >= 0 ? String(row[idxSrc] || '').trim() : '';
+            const target = idxDst >= 0 ? String(row[idxDst] || '').trim() : '';
+            const source = sourceRaw.replace(/^PVE/i, 'FVE');
+            const value = parseFloat(String(row[idxVal] ?? '').replace(/\s/g, '').replace(',', '.'));
+            if (!Number.isFinite(value)) return;
+            total += value;
+            records++;
+            if (source) { sources.add(source); bySource[source] = (bySource[source] || 0) + value; }
+            if (target) { targets.add(target); byTarget[target] = (byTarget[target] || 0) + value; }
+        });
+        return { label: periodLabel(filename), end: periodEndTimestamp(filename), total, sources: sources.size, targets: targets.size, records, bySource, byTarget };
+    }
+
+    function getVisibleHistoryRows() {
+        return allHistorySummaries.map(period => {
+            const active = allHistorySelectedGroups.filter(group => period.byGroup[group]);
+            const total = active.reduce((sum, group) => sum + period.byGroup[group].total, 0);
+            const bySource = {}, byTarget = {};
+            let sources = 0, targets = 0, records = 0;
+            active.forEach(group => {
+                const item = period.byGroup[group];
+                sources += item.sources; targets += item.targets; records += item.records;
+                Object.entries(item.bySource || {}).forEach(([name,value]) => { const key = `${group} · ${name}`; bySource[key] = (bySource[key] || 0) + value; });
+                Object.entries(item.byTarget || {}).forEach(([name,value]) => { const key = `${group} · ${name}`; byTarget[key] = (byTarget[key] || 0) + value; });
+            });
+            return { ...period, total, activeGroups: active.filter(group => period.byGroup[group].total > 0), bySource, byTarget, sources, targets, records };
+        });
+    }
+
+    function renderMiniHistoryChart() {
+        const el = document.getElementById('mini-history-chart');
+        if (!el || !window.echarts || !allHistorySummaries.length) return;
+        const rows = getVisibleHistoryRows().filter(item => item.activeGroups.length);
+        if (!rows.length) { el.textContent = 'Pro vybrané skupiny nejsou dostupná období se sdílením.'; return; }
+        const chart = echarts.getInstanceByDom(el) || echarts.init(el);
+        const fmt = value => Number(value).toLocaleString('cs-CZ', {minimumFractionDigits:2, maximumFractionDigits:2});
+        const selectedIndex = rows.findIndex(item => item.key === allHistorySelectedPeriodKey);
+        chart.setOption({
+            animation:true,
+            tooltip:{trigger:'axis', valueFormatter:value => `${fmt(value)} kWh`, formatter: params => { const row=rows[params[0]?.dataIndex]; if(!row) return ''; return `<strong>${row.label}</strong><br/>Celkem: <strong>${fmt(row.total)} kWh</strong>`; }},
+            grid:{left:58,right:16,top:18,bottom:48},
+            xAxis:{type:'category',data:rows.map(item=>item.label),axisLabel:{rotate:rows.length>5?35:0,hideOverlap:true,fontSize:10}},
+            yAxis:{type:'value',min:0,name:'kWh',axisLabel:{fontSize:10}},
+            series:[{name:'Celkem sdíleno',type:'line',smooth:false,symbol:'circle',symbolSize:7,lineStyle:{width:3,color:'#355b36'},itemStyle:{color:'#5470c6'},data:rows.map(item=>Number(item.total.toFixed(3))),markPoint:selectedIndex>=0?{symbol:'circle',symbolSize:19,label:{show:false},itemStyle:{color:'#f4b942',borderColor:'#355b36',borderWidth:2},data:[{coord:[selectedIndex,Number(rows[selectedIndex].total.toFixed(3))]}]}:undefined}]
+        },true);
+        chart.off('click');
+        chart.on('click', params => { if(params.componentType==='series' && Number.isInteger(params.dataIndex)) selectSharedHistoryPeriod(rows[params.dataIndex]); });
+        document.getElementById('mini-history-status').textContent = selectedIndex>=0 ? `Právě zobrazené období: ${rows[selectedIndex].label}. Kliknutím na jiný bod načteš další období.` : 'Kliknutím na bod grafu načteš data příslušného období.';
+    }
+
+    function selectSharedHistoryPeriod(period) {
+        if (!period) return;
+        allHistorySelectedPeriodKey = period.key;
+        renderAllHistoryChart();
+        renderMiniHistoryChart();
+        loadSelectedHistoryPeriod(period);
+    }
+
+    function renderAllHistoryChart() {
+        const chartElement = document.getElementById('all-history-chart');
+        const tableWrap = document.getElementById('all-history-table-wrap');
+        if (!chartElement) return;
+        const visible = getVisibleHistoryRows().filter(item => item.activeGroups.length);
+        const labels = visible.map(item => item.label);
+        const format = value => Number(value).toLocaleString('cs-CZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const rowHtml = visible.map((item, index) => {
+            const details = item.activeGroups.filter(group => Number(item.byGroup[group]?.total || 0) > 0).map(group => `${group}: ${format(item.byGroup[group].total)} kWh`).join(' · ');
+            return `<tr data-chart-index="${index}" data-period-key="${item.key}" class="${item.key === allHistorySelectedPeriodKey ? 'period-selected' : ''}" tabindex="0" title="Kliknutím načteš data tohoto období"><td>${item.label}<div class="all-history-detail">${details}</div></td><td><strong>${format(item.total)} kWh</strong></td><td class="all-history-count">${item.activeGroups.length}</td><td>${item.sources}</td><td>${item.targets}</td><td>${item.records}</td></tr>`;
+        }).join('');
+        tableWrap.innerHTML = `<table><thead><tr><th>Období a rozpad podle skupin</th><th>Celkem sdíleno</th><th>Počet skupin</th><th>Zdrojů</th><th>Odběrných míst</th><th>Počet záznamů</th></tr></thead><tbody>${rowHtml}</tbody></table>`;
+        const chart = window.echarts ? (echarts.getInstanceByDom(chartElement) || echarts.init(chartElement)) : null;
+        if (!chart) { chartElement.textContent = 'Knihovnu grafu se nepodařilo načíst.'; return; }
+        const palette = ['#5470c6','#91cc75','#fac858','#ee6666','#73c0de','#3ba272','#fc8452','#9a60b4','#ea7ccc','#6e7074','#546fc6','#c4ccd3'];
+        let series = [];
+        if (allHistoryChartMode === 'total') {
+            series = allHistorySelectedGroups.filter(group => visible.some(item => Number(item.byGroup[group]?.total || 0) > 0)).map(group => ({ name: group, type: 'bar', stack: 'total', itemStyle: { color: ({ 'JANOV': '#5470c6', 'PALACKÉHO': '#91cc75', 'ENERKOM JBC 01': '#fac858' })[group] }, emphasis: { focus: 'series' }, data: visible.map(item => Number(((item.byGroup[group] || {}).total || 0).toFixed(3))) }));
+            series.push({ name: 'Celkem', type: 'line', symbol: 'circle', symbolSize: 8, lineStyle: { width: 3, color: '#263b2b' }, itemStyle: { color: '#263b2b' }, data: visible.map(item => Number(item.total.toFixed(3))) });
+        } else {
+            const field = allHistoryChartMode === 'sources' ? 'bySource' : 'byTarget';
+            const names = Array.from(new Set(visible.flatMap(item => Object.keys(item[field] || {})))).sort((a,b) => a.localeCompare(b, 'cs'));
+            series = names.map(name => ({ name, type: 'bar', stack: 'sharing', itemStyle: { color: ({ 'JANOV': '#5470c6', 'PALACKÉHO': '#91cc75', 'ENERKOM JBC 01': '#fac858' })[name.split(' · ')[0]] || '#91a3a1' }, emphasis: { focus: 'series' }, data: visible.map(item => Number(((item[field] || {})[name] || 0).toFixed(3))) }));
+        }
+        chart.setOption({
+            color: palette, animation: true,
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: params => { const active = params.filter(item => Number(item.value) > 0); const title = params[0]?.axisValueLabel || ''; return [title, ...active.map(item => `${item.marker}${item.seriesName}: <strong>${format(item.value)} kWh</strong>`)].join('<br/>'); } },
+            legend: { type: 'scroll', top: 0, left: 8, right: 8, pageTextStyle: { color: '#64748b' } },
+            grid: { left: 76, right: 28, top: 55, bottom: 72 },
+            xAxis: { type: 'category', data: labels, axisLabel: { interval: 0, rotate: labels.length > 6 ? 35 : 0, hideOverlap: true } },
+            yAxis: { type: 'value', name: 'kWh', min: 0, axisLabel: { formatter: value => Number(value).toLocaleString('cs-CZ') } },
+            series
+        }, true);
+        chart.off('click');
+        chart.on('click', params => {
+            if (params.componentType === 'series' && Number.isInteger(params.dataIndex)) selectPeriodAtIndex(params.dataIndex);
+        });
+        const selectPeriodAtIndex = index => {
+            const period = visible[index];
+            if (!period) return;
+            selectSharedHistoryPeriod(period);
+        };
+        tableWrap.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', () => selectPeriodAtIndex(Number(row.dataset.chartIndex)));
+            row.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectPeriodAtIndex(Number(row.dataset.chartIndex)); } });
+            row.addEventListener('mouseenter', () => {
+                tableWrap.querySelectorAll('tbody tr').forEach(item => item.classList.remove('linked-highlight'));
+                row.classList.add('linked-highlight');
+                chart.dispatchAction({ type: 'showTip', seriesIndex: 0, dataIndex: Number(row.dataset.chartIndex) });
+            });
+            row.addEventListener('mouseleave', () => {
+                row.classList.remove('linked-highlight');
+                chart.dispatchAction({ type: 'hideTip' });
+            });
+        });
+        chart.off('mouseover');
+        chart.on('mouseover', params => {
+            if (params.componentType !== 'series') return;
+            const row = tableWrap.querySelector(`tbody tr[data-chart-index="${params.dataIndex}"]`);
+            tableWrap.querySelectorAll('tbody tr').forEach(item => item.classList.toggle('linked-highlight', item === row));
+        });
+        chart.on('mouseout', () => tableWrap.querySelectorAll('tbody tr').forEach(item => item.classList.remove('linked-highlight')));
+        setTimeout(() => chart.resize(), 0);
+        if (!chartElement.dataset.resizeObserved && window.ResizeObserver) {
+            new ResizeObserver(() => chart.resize()).observe(chartElement);
+            chartElement.dataset.resizeObserved = '1';
+        }
+        renderMiniHistoryChart();
+    }
+
+    // Z názvu CSV vytáhne pouze období; technický název souboru uživateli nezobrazujeme.
+    function extractPeriodFromFilename(filename) {
+        const match = String(filename || '').match(/za_obdobi_(\d{2})-(\d{2})-(\d{4})_(\d{2})-(\d{2})-(\d{4})/i);
+        if (!match) return null;
+        return { from: new Date(+match[3], +match[2] - 1, +match[1]), to: new Date(+match[6], +match[5] - 1, +match[4]) };
+    }
+
+    function formatPeriodDate(date) {
+        return date.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' });
+    }
+
+    function periodLabel(filename) {
+        const period = extractPeriodFromFilename(filename);
+        return period ? `${formatPeriodDate(period.from)} – ${formatPeriodDate(period.to)}` : 'Období nelze určit';
+    }
+
+    function periodEndTimestamp(filename) {
+        const period = extractPeriodFromFilename(filename);
+        return period ? period.to.getTime() : 0;
+    }
+
+    function loadLatestHistoryPeriod() {
+        if (!HISTORY_API_URL.startsWith('https://script.google.com/macros/s/')) return;
+        const fileNameEl = document.getElementById('file-name');
+        fileNameEl.textContent = 'Automaticky načítám poslední dostupné období…';
+        historyJsonp('list', {}, data => {
+            if (!data || !data.ok) {
+                fileNameEl.textContent = 'Poslední období se nepodařilo automaticky načíst. Můžeš použít Historii nebo vybrat soubor ručně.';
+                return;
+            }
+            const files = (Array.isArray(data.files) ? data.files : []).slice().sort((a, b) => periodEndTimestamp(b.name) - periodEndTimestamp(a.name));
+            if (!files.length) {
+                fileNameEl.textContent = 'Ve webové historii zatím nejsou dostupná žádná data.';
+                return;
+            }
+            loadHistoryFile(files[0], { disabled: false, textContent: '' }, true);
+        });
+    }
+
+    function historyJsonp(action, params, onResult) {
+        const callbackName = 'historyCallback_' + (++historyRequestCounter);
+        const script = document.createElement('script');
+        const query = new URLSearchParams({ action, callback: callbackName, ...params, _: String(Date.now()) });
+        let finished = false;
+        const cleanup = () => { if (finished) return; finished = true; delete window[callbackName]; script.remove(); };
+        window[callbackName] = data => { cleanup(); onResult(data); };
+        script.onerror = () => { cleanup(); onResult({ok:false,error:'Nepodařilo se spojit s Google Diskem. Zkontroluj připojení a nastavení sdílení.'}); };
+        script.src = HISTORY_API_URL + (HISTORY_API_URL.includes('?') ? '&' : '?') + query.toString();
+        document.body.appendChild(script);
+        setTimeout(() => { if (!finished) { cleanup(); onResult({ok:false,error:'Požadavek na Google Disk vypršel.'}); } }, 30000);
+    }
+
+    function loadHistoryFile(file, button, automatic = false) {
+        if (button) { button.disabled = true; button.textContent = 'Načítám…'; }
+        if (!automatic) historyStatus.textContent = `Načítám období ${periodLabel(file.name)}…`;
+        historyJsonp('get', { id: file.id }, data => {
+            if (button) { button.disabled = false; button.textContent = automatic ? '' : 'Zobrazit'; }
+            if (!data || !data.ok || typeof data.content !== 'string') {
+                const message = data?.error || 'Soubor se nepodařilo načíst.';
+                if (automatic) document.getElementById('file-name').textContent = `Automatické načtení selhalo: ${message}`;
+                else historyStatus.textContent = message;
+                return;
+            }
+            const csvFile = new File([data.content], file.name, { type: 'text/csv;charset=utf-8' });
+            document.getElementById('file-name').innerText = `Období: ${periodLabel(file.name)}`;
+            handleFileSelect({ target: { files: [csvFile] } });
+            closeHistory();
+        });
+    }
+
+</script>
+
+</body>
+</html>
