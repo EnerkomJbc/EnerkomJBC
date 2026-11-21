@@ -126,6 +126,29 @@
         }
 
 
+
+        .footer-icon-btn { min-height:58px; display:flex; align-items:center; justify-content:center; border:1px solid #d5e2d5; border-radius:9px; background:#fff; color:#355b36; cursor:pointer; position:relative; box-shadow:0 2px 6px rgba(0,0,0,.04); }
+        .footer-icon-btn:hover { background:#f3f8f3; border-color:var(--brand-green); }
+        .footer-icon-btn svg { width:27px; height:27px; }
+        .footer-icon-btn[title]:hover::after { content:attr(title); position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); z-index:30; background:#263b2b; color:#fff; padding:7px 10px; border-radius:5px; white-space:nowrap; font-size:12px; box-shadow:0 3px 10px rgba(0,0,0,.18); }
+        .info-modal { display:none; position:fixed; inset:0; z-index:6000; background:rgba(15,23,42,.55); align-items:center; justify-content:center; padding:18px; }
+        .info-dialog { width:min(900px,100%); max-height:88vh; overflow:auto; background:#fff; border-radius:13px; box-shadow:0 18px 55px rgba(0,0,0,.28); padding:24px; position:relative; }
+        .info-dialog h2 { margin:0 0 12px; color:var(--brand-dark); font-size:23px; }
+        .info-dialog p { line-height:1.6; }
+        .info-close { position:sticky; float:right; top:0; border:0; background:#eef4ee; color:#355b36; border-radius:7px; padding:5px 11px; font-size:22px; cursor:pointer; z-index:2; }
+        .source-hero { display:block; width:min(620px,100%); max-height:300px; object-fit:contain; margin:8px auto 18px; border-radius:10px; }
+        .source-flow { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:18px 0; align-items:stretch; }
+        .source-step { border:1px solid #dce8dc; border-radius:10px; padding:14px; background:#fbfdfb; text-align:center; min-width:0; }
+        .source-step img { max-width:100%; height:54px; object-fit:contain; margin:5px auto 10px; }
+        .source-step strong { display:block; color:#263b2b; margin-bottom:6px; }
+        .source-step p { font-size:13px; color:#52616f; margin:0; }
+        .source-arrow { display:none; }
+        .source-note { background:#f3f7f3; border-left:4px solid var(--brand-green); border-radius:5px; padding:12px 14px; }
+        .mini-history-panel { margin-top:16px; padding:14px; border:1px solid #d5e2d5; border-radius:9px; background:#fff; }
+        .mini-history-panel h3 { margin:0 0 8px; font-size:17px; color:var(--brand-dark); }
+        #mini-history-chart { width:100%; height:245px; }
+        @media(max-width:650px) { .source-flow { grid-template-columns:1fr; } .info-dialog { padding:16px; } #mini-history-chart { height:220px; } }
+
         /* Souhrnné karty (Návrh 4 - zelený akcent) */
         .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 18px; }
         .kpi-card { background: white; padding: 14px 18px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #d5e2d5; border-left: 4px solid var(--brand-green); text-align: center; }
@@ -193,7 +216,7 @@
 
         /* Trvale viditelné kontakty a rozbalovací historie verzí */
         .contact-footer { max-width:1440px; margin:22px auto 8px; }
-        .contact-bar { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+        .contact-bar { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; }
         .contact-link, .version-toggle { display:flex; align-items:center; gap:11px; min-width:0; padding:13px 14px; border:1px solid #d5e2d5; border-radius:9px; color:#355b36; text-decoration:none; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,.05); font:inherit; text-align:left; }
         .contact-link { transition:background .2s,border-color .2s; }
         .contact-link:hover, .version-toggle:hover { background:#f2f7f2; border-color:var(--brand-green); }
@@ -211,6 +234,7 @@
         .version-history li { display:grid; grid-template-columns:58px 1fr; gap:10px; padding:9px 0; border-bottom:1px solid #edf1ed; font-size:13px; }
         .version-history li:last-child { border-bottom:0; }
         .version-number { color:var(--brand-green-dark); font-weight:700; white-space:nowrap; }
+        @media(max-width:1050px) { .contact-bar { grid-template-columns:repeat(3,minmax(0,1fr)); } }
         @media(max-width:850px) { .contact-bar { grid-template-columns:repeat(2,minmax(0,1fr)); } }
         @media(max-width:520px) { .contact-bar { grid-template-columns:1fr; } }
 
@@ -412,6 +436,11 @@
                 </thead>
                 <tbody><tr><td colspan="3" style="text-align:center; color:#999;">Nahrajte soubor pro zobrazení dat</td></tr></tbody>
             </table>
+            <div class="mini-history-panel">
+                <h3>Graf sdílení v čase – ENERKOM Jablonecko</h3>
+                <div id="mini-history-chart" role="img" aria-label="Celkové sdílení energie v jednotlivých obdobích"></div>
+                <div id="mini-history-status" style="font-size:11px;color:#64748b;">Kliknutím na období v grafu se načte odpovídající přehled.</div>
+            </div>
         </div>
         <div class="table-wrapper">
             <h3>Odběrná místa (EANo)</h3>
@@ -462,13 +491,20 @@
     </a>
     <button type="button" class="version-toggle" id="versionToggle" aria-expanded="false" aria-controls="versionPanel">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/><path d="M8 2h8"/></svg>
-      <span><strong>Verze aplikace</strong><small>Aktuální verze: 42</small></span>
+      <span><strong>Verze aplikace</strong><small>Aktuální verze: 43</small></span>
       <svg class="version-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <button type="button" class="footer-icon-btn" id="editGuidanceOpen" title="Pokyny pro úpravy" aria-label="Pokyny pro úpravy">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5h6M8 10h8M8 14h8M8 18h5"/><path d="m16 16 2 2 4-4"/></svg>
+    </button>
+    <button type="button" class="footer-icon-btn" id="sourceDataOpen" title="Zdroj dat" aria-label="Zdroj dat">
+      <svg viewBox="0 0 64 64" fill="none" stroke="#4f9b28" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 9 12 25l10 1M12 25a23 23 0 0 1 39-9"/><path d="m53 39 0 16-12-1M53 55a23 23 0 0 1-42-9"/><path d="m8 34 4-9 9 4"/><path d="M42 9 52 8 52 19"/></svg>
     </button>
   </div>
   <section class="version-panel" id="versionPanel" aria-label="Historie verzí">
     <h3>Historie verzí</h3>
     <ol class="version-history">
+      <li><span class="version-number">Verze 43</span><span>Nová informační sekce Zdroj dat, ikony v zápatí, zjednodušený graf sdílení pod seznamem zdrojů a skrytí skupin s nulovým sdílením v popisech období.</span></li>
       <li><span class="version-number">Verze 42</span><span>Doplněno logo ChatGPT do pokynů, klikací výběr období v souhrnném grafu i tabulce a oddělený ukazatel celkové historicky sdílené energie.</span></li>
       <li><span class="version-number">Verze 41</span><span>Trvale zobrazený souhrnný graf sdílení všech skupin ENERKOM Jablonecko, výběr skupin, rozpad podle zdrojů a odběrů a propojení grafu s tabulkou.</span></li>
       <li><span class="version-number">Verze 40</span><span>Úprava názvu grafu a názvu stránky v prohlížeči.</span></li>
@@ -502,12 +538,11 @@
       <li><span class="version-number">Verze 12</span><span>První rozšíření původního přehledu o úpravy zobrazení a pohodlnější práci s načtenými daty.</span></li>
       <li><span class="version-number">Verze 11</span><span>Základní interaktivní mapa sdílení energie: načtení Excel/CSV, síťové propojení zdrojů a odběrů, barevné šipky podle objemu toku a souhrnné tabulky.</span></li>
     </ol>
-    <div class="edit-guidance">
-      <button type="button" class="edit-guidance-toggle" id="editGuidanceToggle" aria-expanded="false" aria-controls="editGuidancePanel">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 4 4 4L8 20l-5 1 1-5L16 4Z"/><path d="m14 6 4 4"/></svg>
-        Pokyny pro další úpravy
-      </button>
-      <div class="edit-guidance-panel" id="editGuidancePanel">
+
+  </section>
+</footer>
+
+<div class="info-modal" id="editGuidanceModal" role="dialog" aria-modal="true" aria-labelledby="editGuidanceTitle"><div class="info-dialog"><button type="button" class="info-close" data-close-info aria-label="Zavřít">×</button><h2 id="editGuidanceTitle">Pokyny pro úpravy aplikace</h2>      <div class="edit-guidance-panel" id="editGuidancePanel" style="display:block">
         <h4>Jak pokračovat při další úpravě aplikace</h4>
         <p>Tyto pokyny slouží jako stručné předání kontextu pro další práci na aplikaci Enerkom Jablonecko. Rozhodující je vždy poslední číslovaný HTML soubor, který uživatel v daném úkolu nahraje. Historie na GitHubu ani jeho aktuální obsah nejsou zdrojem pro další úpravy.</p>
         <ol>
@@ -516,14 +551,13 @@
           <li>Do názvu nového souboru uveď nové číslo a krátký popis změny. Aktualizuj údaj „Aktuální verze“ i seznam Historie verzí v aplikaci; novou položku vlož na začátek.</li>
           <li>Vytvoř nový samostatný HTML soubor ke stažení. Původní soubor uživatele nikdy nepřepisuj.</li>
           <li>Obsah právě vytvořeného číslovaného souboru současně publikuj do repozitáře <strong>EnerkomJbc/EnerkomJBC</strong> jako <strong>index.html</strong>, přepiš dosavadní obsah a ověř, že GitHub změnu skutečně přijal.</li>
+          <li>Publikaci na GitHub proveď automaticky ještě před předáním odkazu ke stažení. Nečekej na lokální test uživatele; každou novou verzi nahraj jako index.html, i když ji uživatel teprve bude testovat. Případné chyby oprav v následující číslované verzi a znovu přepiš index.html.</li>
           <li>Uživatel má uchované vlastní číslované verze a může se kdykoliv vrátit ke starší. Při každém novém zadání proto znovu vycházej z konkrétního souboru, který právě nahraje.</li>
         </ol>
         <p class="collaboration-note"><strong>Spolupráce:</strong> Aplikace Enerkom Jablonecko je připravována a průběžně upravována uživatelem ve spolupráci s ChatGPT od OpenAI. Pro navázání práce využij dostupnou historii konverzací. <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" class="chatgpt-link"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" style="vertical-align:middle;margin-right:5px"><g fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.1a4.4 4.4 0 0 0-4.2 3 4.4 4.4 0 0 0-3.1 7.4 4.4 4.4 0 0 0 4.1 6.4 4.4 4.4 0 0 0 6.4 0 4.4 4.4 0 0 0 4.1-6.4 4.4 4.4 0 0 0-3.1-7.4 4.4 4.4 0 0 0-4.2-3Z"/><path d="m12 3.1 0 17.8M7.8 6.1l8.4 11.8M4.7 13.5l14.6-3M5.8 17.2l12.4-7.1"/></g></svg><strong>ChatGPT – Otevřít</strong></a>. Přímý odkaz na konkrétní konverzaci lze doplnit po vytvoření sdíleného odkazu v ChatGPT.</p>
         <p><strong>Potvrzení:</strong> O nahrání na GitHub informuj jako o dokončeném pouze tehdy, když nástroj potvrdí úspěšné uložení. Pokud se publikace nepodaří, sděl to výslovně a neslibuj, že je aplikace na webu aktualizovaná.</p>
       </div>
-    </div>
-  </section>
-</footer>
+    </div></div></div>
 
 <div class="history-modal" id="historyModal" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
   <div class="history-dialog">
@@ -549,13 +583,6 @@
         const expanded = versionToggle.getAttribute('aria-expanded') === 'true';
         versionToggle.setAttribute('aria-expanded', String(!expanded));
         versionPanel.classList.toggle('open', !expanded);
-    });
-    const editGuidanceToggle = document.getElementById('editGuidanceToggle');
-    const editGuidancePanel = document.getElementById('editGuidancePanel');
-    editGuidanceToggle.addEventListener('click', () => {
-        const expanded = editGuidanceToggle.getAttribute('aria-expanded') === 'true';
-        editGuidanceToggle.setAttribute('aria-expanded', String(!expanded));
-        editGuidancePanel.classList.toggle('open', !expanded);
     });
 
     const KML_POINTS = [
@@ -970,8 +997,7 @@
                 width: style.width,
                 color: { color: style.color, highlight: '#749c75' },
                 smooth: { type: 'dynamic' }
-            });
-        });
+            });        });
 
         edgesDataSet.add(edgesArray);
     }
@@ -1305,6 +1331,13 @@ initAndRenderGeoMap = function() {
     let historyRequestCounter = 0;
 
     document.getElementById('historyBtn').addEventListener('click', openHistory);
+    const editGuidanceModal = document.getElementById('editGuidanceModal');
+    const sourceDataModal = document.getElementById('sourceDataModal');
+    document.getElementById('editGuidanceOpen').addEventListener('click', () => editGuidanceModal.style.display='flex');
+    document.getElementById('sourceDataOpen').addEventListener('click', () => sourceDataModal.style.display='flex');
+    document.querySelectorAll('[data-close-info]').forEach(button => button.addEventListener('click', () => { editGuidanceModal.style.display='none'; sourceDataModal.style.display='none'; }));
+    [editGuidanceModal, sourceDataModal].forEach(modal => modal.addEventListener('click', event => { if(event.target===modal) modal.style.display='none'; }));
+    document.addEventListener('keydown', event => { if(event.key==='Escape'){ editGuidanceModal.style.display='none'; sourceDataModal.style.display='none'; } });
     document.getElementById('allHistoryGraphBtn').addEventListener('click', () => {
         document.getElementById('all-history-graph-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
@@ -1602,6 +1635,7 @@ initAndRenderGeoMap = function() {
                     grouped.get(key).filesByGroup[group] = result.file;
                 });
                 allHistorySummaries = Array.from(grouped.values()).sort((a,b) => a.end - b.end);
+                if (!allHistorySelectedPeriodKey && allHistorySummaries.length) allHistorySelectedPeriodKey = allHistorySummaries[allHistorySummaries.length - 1].key;
                 const allTimeTotal = successful.reduce((sum, result) => sum + summarizeHistoryMatrix(result.matrix, result.file.name).total, 0);
                 document.getElementById('kpi-all-time-kwh').textContent = `${allTimeTotal.toLocaleString('cs-CZ', {minimumFractionDigits:2, maximumFractionDigits:2})} kWh`;
                 renderAllHistoryChart();
@@ -1677,6 +1711,35 @@ initAndRenderGeoMap = function() {
         });
     }
 
+    function renderMiniHistoryChart() {
+        const el = document.getElementById('mini-history-chart');
+        if (!el || !window.echarts || !allHistorySummaries.length) return;
+        const rows = getVisibleHistoryRows().filter(item => item.activeGroups.length);
+        if (!rows.length) { el.textContent = 'Pro vybrané skupiny nejsou dostupná období se sdílením.'; return; }
+        const chart = echarts.getInstanceByDom(el) || echarts.init(el);
+        const fmt = value => Number(value).toLocaleString('cs-CZ', {minimumFractionDigits:2, maximumFractionDigits:2});
+        const selectedIndex = rows.findIndex(item => item.key === allHistorySelectedPeriodKey);
+        chart.setOption({
+            animation:true,
+            tooltip:{trigger:'axis', valueFormatter:value => `${fmt(value)} kWh`, formatter: params => { const row=rows[params[0]?.dataIndex]; if(!row) return ''; return `<strong>${row.label}</strong><br/>Celkem: <strong>${fmt(row.total)} kWh</strong>`; }},
+            grid:{left:58,right:16,top:18,bottom:48},
+            xAxis:{type:'category',data:rows.map(item=>item.label),axisLabel:{rotate:rows.length>5?35:0,hideOverlap:true,fontSize:10}},
+            yAxis:{type:'value',min:0,name:'kWh',axisLabel:{fontSize:10}},
+            series:[{name:'Celkem sdíleno',type:'line',smooth:false,symbol:'circle',symbolSize:7,lineStyle:{width:3,color:'#355b36'},itemStyle:{color:'#5470c6'},data:rows.map(item=>Number(item.total.toFixed(3))),markPoint:selectedIndex>=0?{symbol:'circle',symbolSize:19,label:{show:false},itemStyle:{color:'#f4b942',borderColor:'#355b36',borderWidth:2},data:[{coord:[selectedIndex,Number(rows[selectedIndex].total.toFixed(3))]}]}:undefined}]
+        },true);
+        chart.off('click');
+        chart.on('click', params => { if(params.componentType==='series' && Number.isInteger(params.dataIndex)) selectSharedHistoryPeriod(rows[params.dataIndex]); });
+        document.getElementById('mini-history-status').textContent = selectedIndex>=0 ? `Právě zobrazené období: ${rows[selectedIndex].label}. Kliknutím na jiný bod načteš další období.` : 'Kliknutím na bod grafu načteš data příslušného období.';
+    }
+
+    function selectSharedHistoryPeriod(period) {
+        if (!period) return;
+        allHistorySelectedPeriodKey = period.key;
+        renderAllHistoryChart();
+        renderMiniHistoryChart();
+        loadSelectedHistoryPeriod(period);
+    }
+
     function renderAllHistoryChart() {
         const chartElement = document.getElementById('all-history-chart');
         const tableWrap = document.getElementById('all-history-table-wrap');
@@ -1685,7 +1748,7 @@ initAndRenderGeoMap = function() {
         const labels = visible.map(item => item.label);
         const format = value => Number(value).toLocaleString('cs-CZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const rowHtml = visible.map((item, index) => {
-            const details = item.activeGroups.map(group => `${group}: ${format(item.byGroup[group].total)} kWh`).join(' · ');
+            const details = item.activeGroups.filter(group => Number(item.byGroup[group]?.total || 0) > 0).map(group => `${group}: ${format(item.byGroup[group].total)} kWh`).join(' · ');
             return `<tr data-chart-index="${index}" data-period-key="${item.key}" class="${item.key === allHistorySelectedPeriodKey ? 'period-selected' : ''}" tabindex="0" title="Kliknutím načteš data tohoto období"><td>${item.label}<div class="all-history-detail">${details}</div></td><td><strong>${format(item.total)} kWh</strong></td><td class="all-history-count">${item.activeGroups.length}</td><td>${item.sources}</td><td>${item.targets}</td><td>${item.records}</td></tr>`;
         }).join('');
         tableWrap.innerHTML = `<table><thead><tr><th>Období a rozpad podle skupin</th><th>Celkem sdíleno</th><th>Počet skupin</th><th>Zdrojů</th><th>Odběrných míst</th><th>Počet záznamů</th></tr></thead><tbody>${rowHtml}</tbody></table>`;
@@ -1694,7 +1757,7 @@ initAndRenderGeoMap = function() {
         const palette = ['#5470c6','#91cc75','#fac858','#ee6666','#73c0de','#3ba272','#fc8452','#9a60b4','#ea7ccc','#6e7074','#546fc6','#c4ccd3'];
         let series = [];
         if (allHistoryChartMode === 'total') {
-            series = allHistorySelectedGroups.map(group => ({ name: group, type: 'bar', stack: 'total', itemStyle: { color: ({ 'JANOV': '#5470c6', 'PALACKÉHO': '#91cc75', 'ENERKOM JBC 01': '#fac858' })[group] }, emphasis: { focus: 'series' }, data: visible.map(item => Number(((item.byGroup[group] || {}).total || 0).toFixed(3))) }));
+            series = allHistorySelectedGroups.filter(group => visible.some(item => Number(item.byGroup[group]?.total || 0) > 0)).map(group => ({ name: group, type: 'bar', stack: 'total', itemStyle: { color: ({ 'JANOV': '#5470c6', 'PALACKÉHO': '#91cc75', 'ENERKOM JBC 01': '#fac858' })[group] }, emphasis: { focus: 'series' }, data: visible.map(item => Number(((item.byGroup[group] || {}).total || 0).toFixed(3))) }));
             series.push({ name: 'Celkem', type: 'line', symbol: 'circle', symbolSize: 8, lineStyle: { width: 3, color: '#263b2b' }, itemStyle: { color: '#263b2b' }, data: visible.map(item => Number(item.total.toFixed(3))) });
         } else {
             const field = allHistoryChartMode === 'sources' ? 'bySource' : 'byTarget';
@@ -1703,7 +1766,7 @@ initAndRenderGeoMap = function() {
         }
         chart.setOption({
             color: palette, animation: true,
-            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, valueFormatter: value => `${format(value)} kWh` },
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: params => { const active = params.filter(item => Number(item.value) > 0); const title = params[0]?.axisValueLabel || ''; return [title, ...active.map(item => `${item.marker}${item.seriesName}: <strong>${format(item.value)} kWh</strong>`)].join('<br/>'); } },
             legend: { type: 'scroll', top: 0, left: 8, right: 8, pageTextStyle: { color: '#64748b' } },
             grid: { left: 76, right: 28, top: 55, bottom: 72 },
             xAxis: { type: 'category', data: labels, axisLabel: { interval: 0, rotate: labels.length > 6 ? 35 : 0, hideOverlap: true } },
@@ -1717,11 +1780,7 @@ initAndRenderGeoMap = function() {
         const selectPeriodAtIndex = index => {
             const period = visible[index];
             if (!period) return;
-            allHistorySelectedPeriodKey = period.key;
-            tableWrap.querySelectorAll('tbody tr').forEach(row => row.classList.toggle('period-selected', row.dataset.periodKey === period.key));
-            chart.dispatchAction({ type: 'downplay', seriesIndex: 'all' });
-            chart.dispatchAction({ type: 'highlight', seriesIndex: 'all', dataIndex: index });
-            loadSelectedHistoryPeriod(period);
+            selectSharedHistoryPeriod(period);
         };
         tableWrap.querySelectorAll('tbody tr').forEach(row => {
             row.addEventListener('click', () => selectPeriodAtIndex(Number(row.dataset.chartIndex)));
@@ -1748,6 +1807,7 @@ initAndRenderGeoMap = function() {
             new ResizeObserver(() => chart.resize()).observe(chartElement);
             chartElement.dataset.resizeObserved = '1';
         }
+        renderMiniHistoryChart();
     }
 
     // Z názvu CSV vytáhne pouze období; technický název souboru uživateli nezobrazujeme.
