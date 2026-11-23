@@ -38,6 +38,16 @@
         .header-title-box { text-align: left; flex: 0 1 auto; min-width: 0; }
         h1 { margin: 0; font-size: 23px; color: var(--brand-dark); }
         #file-name { margin-top: 5px; font-size: 13px; color: #64748b; }
+        .startup-progress { display:none; margin:-5px 0 18px; padding:14px 18px; background:#fff; border:1px solid #d8e5d8; border-left:4px solid var(--brand-green); border-radius:9px; box-shadow:0 2px 6px rgba(0,0,0,.045); }
+        .startup-progress.visible { display:block; }
+        .startup-progress-heading { display:flex; align-items:center; gap:9px; color:#334b36; font-weight:700; font-size:14px; }
+        .startup-progress-heading svg { width:19px; height:19px; flex:0 0 auto; }
+        .startup-progress-description { margin:5px 0 10px; color:#64748b; font-size:13px; line-height:1.45; }
+        .startup-progress-track { height:9px; overflow:hidden; background:#e8efe8; border-radius:99px; }
+        .startup-progress-fill { width:0%; height:100%; background:var(--brand-green); border-radius:99px; transition:width .18s ease; }
+        .startup-progress-meta { display:flex; justify-content:space-between; gap:10px; margin-top:6px; color:#64748b; font-size:12px; }
+        .startup-progress-percent { color:#355b36; font-weight:700; font-variant-numeric:tabular-nums; }
+        @media(max-width:600px) { .startup-progress { padding:12px 13px; } .startup-progress-meta { flex-wrap:wrap; } }
         .header-upload { display: flex; align-items: center; margin-left: auto; }
         
         .file-btn { background: var(--brand-green); color: white; padding: 11px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; transition: background 0.2s; box-shadow: 0 2px 4px rgba(116,156,117,0.3); }
@@ -252,14 +262,6 @@
         .footer-icon-btn img { width:32px; height:32px; object-fit:contain; display:block; }
         .source-flow { align-items:stretch; }
         .source-step { display:flex; flex-direction:column; align-items:center; text-align:center; }
-
-        .startup-loading-banner{display:flex;align-items:flex-start;gap:14px;padding:15px 18px;margin:0 0 18px;background:#fff;border:1px solid #d9e5d9;border-left:4px solid var(--brand-green);border-radius:9px;box-shadow:0 2px 6px rgba(0,0,0,.045);color:#334155}
-        .startup-loading-banner[hidden]{display:none}.startup-loading-icon{flex:0 0 34px;width:34px;height:34px;color:var(--brand-green-dark)}
-        .startup-loading-content{flex:1;min-width:0}.startup-loading-content strong{display:block;font-size:15px;color:#263b2b;margin:0 0 4px}
-        .startup-loading-content p{margin:0 0 10px;font-size:13px;line-height:1.45;color:#64748b}.startup-progress-track{height:9px;background:#e8eee8;border-radius:99px;overflow:hidden}
-        .startup-progress-fill{height:100%;width:3%;background:var(--brand-green);border-radius:99px;transition:width .25s ease}.startup-loading-status{display:block;margin-top:6px;font-size:12px;color:#64748b}
-        .startup-loading-banner.is-error{border-left-color:#c2410c;background:#fffaf7}.startup-loading-banner.is-error .startup-loading-icon{color:#c2410c}
-        @media(max-width:600px){.startup-loading-banner{padding:13px;gap:10px}.startup-loading-icon{width:28px;height:28px;flex-basis:28px}}
     </style>
 </head>
 <body>
@@ -303,12 +305,14 @@
             </button>
         </div>
     </header>
-    <section id="startupLoadingBanner" class="startup-loading-banner" role="status" aria-live="polite">
-        <svg class="startup-loading-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 17v3h14v-3"/></svg>
-        <div class="startup-loading-content"><strong>Načítáme aktuální data ENERKOMU</strong>
-        <p>Prosíme o strpení. Načítáme historické údaje a připravujeme grafy a přehledy sdílení elektřiny.</p>
-        <div class="startup-progress-track" role="progressbar" aria-label="Průběh načítání dat" aria-valuemin="0" aria-valuemax="100" aria-valuenow="3"><div id="startupProgressFill" class="startup-progress-fill"></div></div>
-        <span id="startupLoadingStatus" class="startup-loading-status">Probíhá načítání dat…</span></div>
+    <section id="startupProgress" class="startup-progress visible" role="status" aria-live="polite" aria-label="Průběh načítání dat">
+        <div class="startup-progress-heading">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 17v3h14v-3"/></svg>
+            <span>Načítáme aktuální data ENERKOMU</span>
+        </div>
+        <p id="startupProgressDescription" class="startup-progress-description">Prosíme o strpení. Načítáme historické údaje a připravujeme grafy a přehledy sdílení elektřiny.</p>
+        <div class="startup-progress-track" role="progressbar" aria-label="Skutečný průběh načítání" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="startupProgressFill" class="startup-progress-fill"></div></div>
+        <div class="startup-progress-meta"><span id="startupProgressStatus">Připojujeme se k úložišti historických dat…</span><span id="startupProgressPercent" class="startup-progress-percent">0 %</span></div>
     </section>
 
     <!-- Přehledové KPI karty -->
@@ -525,8 +529,7 @@
   <section class="version-panel" id="versionPanel" aria-label="Historie verzí">
     <h3>Historie verzí</h3>
     <ol class="version-history">
-      <li><span class="version-number">Verze 48</span><span>Odstranění duplicitních překrytých CSV období a informační banner se skutečným průběhem načítání dat.</span></li>
-      <li><span class="version-number">Verze 47</span><span>Odkaz na obrazový návod EDC nyní směřuje na webovou verzi hostovanou na GitHub Pages, nikoli na lokální soubor.</span></li>
+      <li><span class="version-number">Verze 47</span><span>Odstranění kratších historických CSV exportů překrytých úplnějším souborem a doplnění skutečného ukazatele průběhu načítání.</span></li>
       <li><span class="version-number">Verze 46</span><span>V sekci Zdroj dat přidán odkaz na samostatný obrazový návod registrace výrobního zdroje FVE na EDC.</span></li>
       <li><span class="version-number">Verze 45</span><span>Doplnění originálního kruhového schématu toku energie a dat a samostatného loga ENERKOM Jablonecko; vložení obrázků přímo do HTML.</span></li>
       <li><span class="version-number">Verze 44</span><span>Oprava automatického načítání dat, doplnění okna Zdroj dat a úprava ikon v zápatí na malé čtvercové ovladače.</span></li>
@@ -611,7 +614,7 @@
     <p>Náš účet v systému <strong>MARFY – ECM System Solutions</strong> tato data z EDC přebírá a dále zpracovává. Slouží nám mimo jiné k přípravě podkladů pro fakturaci, tvorbě různých přehledů a exportu datových souborů ve formátu CSV.</p>
     <p>Tyto CSV soubory následně využívá naše webová aplikace ENERKOM Jablonecko, která z nich vytváří přehledy a grafy sdílení elektrické energie.</p>
     <div class="source-note"><strong>Tok dat:</strong> EDC → MARFY – ECM System Solutions → CSV soubory → webový přehled ENERKOM Jablonecko.</div>
-    <div class="source-note" style="margin-top:14px;"><strong>Registrujete nový výrobní zdroj FVE?</strong><p style="margin:6px 0 10px;">Připravili jsme samostatný obrazový návod, který krok za krokem ukazuje registraci účtu a přidání zdroje v portálu EDC.</p><a href="https://enerkomjbc.github.io/EnerkomJBC/navod-registrace-edc.html" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:var(--brand-green);color:#fff;text-decoration:none;padding:10px 15px;border-radius:6px;font-weight:700;">Otevřít návod na registraci zdroje FVE na EDC ↗</a></div>
+    <div class="source-note" style="margin-top:14px;"><strong>Registrujete nový výrobní zdroj FVE?</strong><p style="margin:6px 0 10px;">Připravili jsme samostatný obrazový návod, který krok za krokem ukazuje registraci účtu a přidání zdroje v portálu EDC.</p><a href="navod-registrace-edc.html" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:var(--brand-green);color:#fff;text-decoration:none;padding:10px 15px;border-radius:6px;font-weight:700;">Otevřít návod na registraci zdroje FVE na EDC ↗</a></div>
   </div>
 </div>
 
@@ -874,7 +877,7 @@
         if (currentView === 'geomap') initAndRenderGeoMap();
     }
 
-    function handleFileSelect(e) {
+    function handleFileSelect(e, onProcessed = null) {
         const file = e.target.files[0];
         if (!file) return;
         document.getElementById('file-name').innerText = `Načtený soubor: ${file.name}`;
@@ -888,19 +891,19 @@
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
                 const json = XLSX.utils.sheet_to_json(worksheet, {header: 1});
-                processRawMatrix(json);
+                processRawMatrix(json, onProcessed);
             };
             reader.readAsArrayBuffer(file);
         } else {
             Papa.parse(file, {
                 skipEmptyLines: true,
-                complete: function(results) { processRawMatrix(results.data); }
+                complete: function(results) { processRawMatrix(results.data, onProcessed); }
             });
         }
     }
 
-    function processRawMatrix(matrix) {
-        if (!matrix || matrix.length < 2) return;
+    function processRawMatrix(matrix, onProcessed = null) {
+        if (!matrix || matrix.length < 2) { if (typeof onProcessed === 'function') onProcessed(false); return; }
         let headers = matrix[0].map(h => String(h).trim());
         
         let idxSrc = headers.findIndex(h => h.toLowerCase().includes('eand'));
@@ -912,6 +915,7 @@
 
         if (idxSrc === -1 || idxDst === -1) {
             alert('Sloupce "EANd" a "EANo" nebyly nalezeny.');
+            if (typeof onProcessed === 'function') onProcessed(false);
             return;
         }
         if (idxVal === -1) idxVal = matrix[0].length - 1;
@@ -939,6 +943,7 @@
 
         updateDateTitleDynamic(datesFrom, datesTo);
         buildNetworkAndTables();
+        if (typeof onProcessed === 'function') onProcessed(true);
     }
 
     function updateDateTitleDynamic(datesFrom, datesTo) {
@@ -992,12 +997,12 @@
         });
 
         document.getElementById('kpi-total-kwh').innerText = totalSharedKwh.toFixed(2) + ' kWh';
-        document.getElementById('kpi-sources-count').innerText = Object.keys(srcTotals).length;
-        document.getElementById('kpi-targets-count').innerText = Object.keys(dstTotals).length;
+        document.getElementById('kpi-sources-count').innerText = Object.keys(srcTotals).length;        document.getElementById('kpi-targets-count').innerText = Object.keys(dstTotals).length;
         document.getElementById('kpi-links-count').innerText = activeLinksCount;
 
         let nodesArray = [];
-        uniqueNodes.forEach(node => {            let isSrc = node.toUpperCase().includes('FVE');
+        uniqueNodes.forEach(node => {
+            let isSrc = node.toUpperCase().includes('FVE');
             nodesArray.push({
                 id: node,
                 label: node,
@@ -1385,30 +1390,6 @@ initAndRenderGeoMap = function() {
     const historyStatus = document.getElementById('historyStatus');
     const historyList = document.getElementById('historyList');
     let historyRequestCounter = 0;
-    const startupProgress = { active:true, pending:0, total:0, completed:0, errors:0, hideTimer:null };
-    function updateStartupProgress(status) {
-        if (!startupProgress.active) return;
-        const percent = Math.min(94, Math.max(3, Math.round(8 + 84 * startupProgress.completed / Math.max(1, startupProgress.total))));
-        const fill=document.getElementById('startupProgressFill'), bar=document.querySelector('#startupLoadingBanner [role=progressbar]');
-        if(fill) fill.style.width=percent+'%'; if(bar) bar.setAttribute('aria-valuenow',String(percent));
-        if(status) document.getElementById('startupLoadingStatus').textContent=status;
-    }
-    function settleStartupRequest(ok) {
-        if(!startupProgress.active) return; if(!ok) startupProgress.errors++;
-        startupProgress.pending=Math.max(0,startupProgress.pending-1); startupProgress.completed++;
-        updateStartupProgress('Staženo '+startupProgress.completed+' datových požadavků; zpracováváme výsledky…');
-        if(startupProgress.pending===0) {
-            clearTimeout(startupProgress.hideTimer);
-            startupProgress.hideTimer=setTimeout(()=>{
-                if(startupProgress.pending!==0 || !startupProgress.active) return;
-                startupProgress.active=false; const banner=document.getElementById('startupLoadingBanner');
-                const fill=document.getElementById('startupProgressFill'), bar=banner?.querySelector('[role=progressbar]');
-                if(fill) fill.style.width='100%'; if(bar) bar.setAttribute('aria-valuenow','100');
-                if(startupProgress.errors){banner?.classList.add('is-error');document.getElementById('startupLoadingStatus').textContent='Některá data se nepodařilo načíst. Podrobnosti najdete v příslušném přehledu.';}
-                else {document.getElementById('startupLoadingStatus').textContent='Data byla úspěšně načtena a přehledy jsou připravené.';setTimeout(()=>{banner.hidden=true;},1100);}
-            },650);
-        }
-    }
 
     document.getElementById('historyBtn').addEventListener('click', openHistory);
     const editGuidanceModal = document.getElementById('editGuidanceModal');
@@ -1445,7 +1426,45 @@ initAndRenderGeoMap = function() {
     document.getElementById('historyClose').addEventListener('click', closeHistory);
     historyModal.addEventListener('click', e => { if (e.target === historyModal) closeHistory(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHistory(); });
+    const startupProgressState = { total: 2, completed: 0, finishedBranches: 0, errors: 0, active: true };
+    function updateStartupProgress(message) {
+        const panel = document.getElementById('startupProgress');
+        if (!panel || !startupProgressState.active) return;
+        const percent = startupProgressState.total ? Math.min(100, Math.round(startupProgressState.completed / startupProgressState.total * 100)) : 0;
+        const fill = document.getElementById('startupProgressFill');
+        const track = panel.querySelector('[role="progressbar"]');
+        if (fill) fill.style.width = percent + '%';
+        if (track) track.setAttribute('aria-valuenow', String(percent));
+        document.getElementById('startupProgressPercent').textContent = percent + ' %';
+        if (message) document.getElementById('startupProgressStatus').textContent = message;
+    }
+    function addStartupProgressTasks(count) {
+        if (!startupProgressState.active) return;
+        startupProgressState.total += Math.max(0, Number(count) || 0);
+        updateStartupProgress();
+    }
+    function completeStartupProgressTask(message) {
+        if (!startupProgressState.active) return;
+        startupProgressState.completed = Math.min(startupProgressState.total, startupProgressState.completed + 1);
+        updateStartupProgress(message);
+    }
+    function finishStartupProgressBranch(errorMessage) {
+        if (!startupProgressState.active) return;
+        if (errorMessage) startupProgressState.errors++;
+        startupProgressState.finishedBranches++;
+        if (startupProgressState.finishedBranches < 2) return;
+        startupProgressState.completed = startupProgressState.total;
+        updateStartupProgress(startupProgressState.errors ? 'Načítání dokončeno s upozorněním. Podrobnosti jsou uvedeny v příslušném přehledu.' : 'Data jsou načtena a přehledy připraveny.');
+        const panel = document.getElementById('startupProgress');
+        if (panel) {
+            panel.querySelector('.startup-progress-heading span').textContent = startupProgressState.errors ? 'Načítání dat dokončeno s upozorněním' : 'Data ENERKOMU jsou připravena';
+            window.setTimeout(() => panel.classList.remove('visible'), 2600);
+        }
+        startupProgressState.active = false;
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
+        updateStartupProgress();
         loadLatestHistoryPeriod();
         loadAllEnerkomHistoryGraph();
     });
@@ -1467,7 +1486,7 @@ initAndRenderGeoMap = function() {
         historyStatus.textContent = 'Načítám seznam období…';
         historyJsonp('list', {}, data => {
             if (!data || !data.ok) { historyStatus.textContent = data?.error || 'Seznam období se nepodařilo načíst.'; return; }
-            historyFilesCache = removeContainedPeriods(data.files).slice()
+            historyFilesCache = removeContainedHistoryExports(Array.isArray(data.files) ? data.files : [])
                 .sort((a, b) => periodEndTimestamp(b.name) - periodEndTimestamp(a.name));
             if (!historyFilesCache.length) { historyStatus.textContent = 'Ve složce zatím nejsou žádná období.'; return; }
 
@@ -1483,7 +1502,8 @@ initAndRenderGeoMap = function() {
                 return a.localeCompare(b, 'cs');
             });
 
-            historyStatus.textContent = `Dostupná období: ${historyFilesCache.length} ve ${groups.size} skupinách.`;
+            const removedDuplicates = (Array.isArray(data.files) ? data.files.length : 0) - historyFilesCache.length;
+            historyStatus.textContent = `Dostupná období: ${historyFilesCache.length} ve ${groups.size} skupinách.${removedDuplicates > 0 ? ` Skryto ${removedDuplicates} kratších nebo duplicitních exportů překrytých úplnějším souborem.` : ''}`;
             groupNames.forEach(groupName => {
                 const items = groups.get(groupName);
                 const isPrimary = groupName === 'ENERKOM JBC 01';
@@ -1572,7 +1592,7 @@ initAndRenderGeoMap = function() {
     function applyHistorySelection() {
         const indexes = Array.from(document.querySelectorAll('.history-select:checked')).map(x => Number(x.value));
         if (!indexes.length) { historyStatus.textContent = 'Nejdřív vyber alespoň jedno období.'; return; }
-        const selected = removeContainedPeriods(indexes.map(i => historyFilesCache[i]).filter(Boolean));
+        const selected = removeContainedHistoryExports(indexes.map(i => historyFilesCache[i]).filter(Boolean));
         const mode = document.querySelector('input[name="historyMode"]:checked')?.value || 'merge';
         const apply = document.getElementById('historyApply');
         apply.disabled = true; apply.textContent = 'Načítám vybraná období…';
@@ -1602,11 +1622,11 @@ initAndRenderGeoMap = function() {
         });
     }
 
-    function fetchHistoryCsv(file) {
+    function fetchHistoryCsv(file, trackStartup = false) {
         return new Promise(resolve => {
             historyJsonp('get', { id: file.id }, data => {
-                if (!data || !data.ok || typeof data.content !== 'string') { resolve({ok:false, error:data?.error || `Soubor ${periodLabel(file.name)} se nepodařilo načíst.`}); return; }
-                Papa.parse(data.content, { skipEmptyLines:true, complete: parsed => resolve({ok:true, file, matrix:parsed.data}) });
+                if (!data || !data.ok || typeof data.content !== 'string') { if (trackStartup) completeStartupProgressTask('Některé historické soubory se nepodařilo načíst…'); resolve({ok:false, error:data?.error || `Soubor ${periodLabel(file.name)} se nepodařilo načíst.`}); return; }
+                Papa.parse(data.content, { skipEmptyLines:true, complete: parsed => { if (trackStartup) completeStartupProgressTask('Stahujeme a zpracováváme historické CSV soubory…'); resolve({ok:true, file, matrix:parsed.data}); } });
             });
         });
     }
@@ -1693,22 +1713,28 @@ initAndRenderGeoMap = function() {
         status.textContent = 'Načítám seznam historických období všech skupin…';
         tableWrap.innerHTML = '';
         historyJsonp('list', {}, data => {
+            completeStartupProgressTask('Seznam historických období načten.');
             if (!data || !data.ok) {
                 status.textContent = data?.error || 'Seznam historických souborů se nepodařilo načíst.';
+                finishStartupProgressBranch(data?.error || true);
                 return;
             }
-            const files = removeContainedPeriods((Array.isArray(data.files) ? data.files : [])
-                .filter(file => ['JANOV', 'PALACKÉHO', 'ENERKOM JBC 01'].includes(extractGroupFromFilename(file.name)))
-                .sort((a, b) => periodEndTimestamp(a.name) - periodEndTimestamp(b.name)));
+            const files = removeContainedHistoryExports((Array.isArray(data.files) ? data.files : [])
+                .filter(file => ['JANOV', 'PALACKÉHO', 'ENERKOM JBC 01'].includes(extractGroupFromFilename(file.name))))
+                .sort((a, b) => periodEndTimestamp(a.name) - periodEndTimestamp(b.name));
             if (!files.length) {
                 status.textContent = 'Pro skupiny JANOV, PALACKÉHO ani ENERKOM JBC 01 nebyla nalezena historická data.';
+                finishStartupProgressBranch();
                 return;
             }
+            addStartupProgressTasks(files.length + 1);
             status.textContent = `Načítám ${files.length} historických souborů ze všech skupin…`;
-            Promise.all(files.map(file => fetchHistoryCsv(file))).then(results => {
+            Promise.all(files.map(file => fetchHistoryCsv(file, true))).then(results => {
                 const successful = results.filter(result => result.ok);
                 if (!successful.length) {
                     status.textContent = results.find(result => result.error)?.error || 'Historická data se nepodařilo načíst.';
+                    completeStartupProgressTask('Zpracování historických dat dokončeno.');
+                    finishStartupProgressBranch(true);
                     return;
                 }
                 const grouped = new Map();
@@ -1727,8 +1753,12 @@ initAndRenderGeoMap = function() {
                 renderAllHistoryChart();
                 const failedCount = results.length - successful.length;
                 status.textContent = `Načteno ${successful.length} souborů ze ${files.length}; souhrn obsahuje ${allHistorySummaries.length} období ze skupin JANOV, PALACKÉHO a ENERKOM JBC 01.${failedCount ? ` Pozor: ${failedCount} souborů se nepodařilo načíst.` : ''}`;
+                completeStartupProgressTask('Historické přehledy a grafy jsou připraveny.');
+                finishStartupProgressBranch(failedCount ? true : null);
             }).catch(error => {
                 status.textContent = error?.message || 'Při načítání historických dat nastala chyba.';
+                completeStartupProgressTask('Zpracování historických dat dokončeno s chybou.');
+                finishStartupProgressBranch(true);
             });
         });
     }
@@ -1897,6 +1927,36 @@ initAndRenderGeoMap = function() {
     }
 
     // Z názvu CSV vytáhne pouze období; technický název souboru uživateli nezobrazujeme.
+    // Vyřadí exporty, jejichž celé období pokrývá jiný soubor stejné skupiny.
+    // Při shodném rozsahu ponechá pouze první soubor; částečné překryvy ponechá oba.
+    function historyGroupKey(filename) {
+        const match = String(filename || '').match(/sk-(.+?)_za_obdobi_/i);
+        return match ? normalizeStr(match[1].replace(/\.csv$/i, '').replace(/_/g, ' ').trim()).toLowerCase() : 'ostatni skupiny';
+    }
+
+    function removeContainedHistoryExports(files) {
+        const sourceFiles = Array.isArray(files) ? files : [];
+        const valid = sourceFiles.filter(file => extractPeriodFromFilename(file.name));
+        const unclassified = sourceFiles.filter(file => !extractPeriodFromFilename(file.name));
+        const kept = [];
+        valid.forEach((candidate, index) => {
+            const candidatePeriod = extractPeriodFromFilename(candidate.name);
+            const candidateGroup = historyGroupKey(candidate.name);
+            const coveredByOther = valid.some((other, otherIndex) => {
+                if (index === otherIndex || historyGroupKey(other.name) !== candidateGroup) return false;
+                const otherPeriod = extractPeriodFromFilename(other.name);
+                const contains = otherPeriod.from.getTime() <= candidatePeriod.from.getTime() && otherPeriod.to.getTime() >= candidatePeriod.to.getTime();
+                if (!contains) return false;
+                const strictlyLonger = otherPeriod.from.getTime() < candidatePeriod.from.getTime() || otherPeriod.to.getTime() > candidatePeriod.to.getTime();
+                if (strictlyLonger) return true;
+                // Stejné období: zachovej jen první výskyt v seznamu.
+                return otherIndex < index;
+            });
+            if (!coveredByOther) kept.push(candidate);
+        });
+        return kept.concat(unclassified);
+    }
+
     function extractPeriodFromFilename(filename) {
         const match = String(filename || '').match(/za_obdobi_(\d{2})-(\d{2})-(\d{4})_(\d{2})-(\d{2})-(\d{4})/i);
         if (!match) return null;
@@ -1917,39 +1977,27 @@ initAndRenderGeoMap = function() {
         return period ? period.to.getTime() : 0;
     }
 
-    // Vyřadí kratší CSV plně obsažená v delším exportu téže skupiny.
-    function removeContainedPeriods(files) {
-        const source = Array.isArray(files) ? files : [];
-        return source.filter((file, index) => {
-            const period = extractPeriodFromFilename(file.name);
-            if (!period) return true;
-            const group = extractGroupFromFilename(file.name);
-            const from = period.from.getTime(), to = period.to.getTime();
-            return !source.some((other, otherIndex) => {
-                if (index === otherIndex || extractGroupFromFilename(other.name) !== group) return false;
-                const otherPeriod = extractPeriodFromFilename(other.name);
-                if (!otherPeriod) return false;
-                const otherFrom = otherPeriod.from.getTime(), otherTo = otherPeriod.to.getTime();
-                if (otherFrom > from || otherTo < to) return false;
-                return otherFrom < from || otherTo > to || otherIndex < index;
-            });
-        });
-    }
-
     function loadLatestHistoryPeriod() {
-        if (!HISTORY_API_URL.startsWith('https://script.google.com/macros/s/')) return;
+        if (!HISTORY_API_URL.startsWith('https://script.google.com/macros/s/')) {
+            document.getElementById('file-name').textContent = 'Automatické načítání historie není nakonfigurováno.';
+            finishStartupProgressBranch(true);
+            return;
+        }
         const fileNameEl = document.getElementById('file-name');
         fileNameEl.textContent = 'Automaticky načítám poslední dostupné období…';
         historyJsonp('list', {}, data => {
+            completeStartupProgressTask('Seznam období pro automatické načtení je připraven.');
             if (!data || !data.ok) {
                 fileNameEl.textContent = 'Poslední období se nepodařilo automaticky načíst. Můžeš použít Historii nebo vybrat soubor ručně.';
+                finishStartupProgressBranch(data?.error || true);
                 return;
             }
-            const files = removeContainedPeriods(data.files).slice().sort((a, b) => periodEndTimestamp(b.name) - periodEndTimestamp(a.name));
+            const files = removeContainedHistoryExports(Array.isArray(data.files) ? data.files : []).sort((a, b) => periodEndTimestamp(b.name) - periodEndTimestamp(a.name));
             if (!files.length) {
                 fileNameEl.textContent = 'Ve webové historii zatím nejsou dostupná žádná data.';
-                return;
-            }
+                finishStartupProgressBranch();
+                return;            }
+            addStartupProgressTasks(2);
             loadHistoryFile(files[0], { disabled: false, textContent: '' }, true);
         });
     }
@@ -1959,15 +2007,12 @@ initAndRenderGeoMap = function() {
         const script = document.createElement('script');
         const query = new URLSearchParams({ action, callback: callbackName, ...params, _: String(Date.now()) });
         let finished = false;
-        const startupTracked = startupProgress.active;
-        if(startupTracked){startupProgress.pending++;startupProgress.total++;clearTimeout(startupProgress.hideTimer);updateStartupProgress('Navazujeme spojení a stahujeme historická data…');}
-        const cleanup = () => { if (finished) return false; finished = true; delete window[callbackName]; script.remove(); return true; };
-        const complete = data => { if(!cleanup()) return; onResult(data); if(startupTracked) settleStartupRequest(!!(data && data.ok)); };
-        window[callbackName] = data => complete(data);
-        script.onerror = () => complete({ok:false,error:'Nepodařilo se spojit s Google Diskem. Zkontroluj připojení a nastavení sdílení.'});
+        const cleanup = () => { if (finished) return; finished = true; delete window[callbackName]; script.remove(); };
+        window[callbackName] = data => { cleanup(); onResult(data); };
+        script.onerror = () => { cleanup(); onResult({ok:false,error:'Nepodařilo se spojit s Google Diskem. Zkontroluj připojení a nastavení sdílení.'}); };
         script.src = HISTORY_API_URL + (HISTORY_API_URL.includes('?') ? '&' : '?') + query.toString();
         document.body.appendChild(script);
-        setTimeout(() => { if (!finished) complete({ok:false,error:'Požadavek na Google Disk vypršel.'}); }, 30000);
+        setTimeout(() => { if (!finished) { cleanup(); onResult({ok:false,error:'Požadavek na Google Disk vypršel.'}); } }, 30000);
     }
 
     function loadHistoryFile(file, button, automatic = false) {
@@ -1977,13 +2022,14 @@ initAndRenderGeoMap = function() {
             if (button) { button.disabled = false; button.textContent = automatic ? '' : 'Zobrazit'; }
             if (!data || !data.ok || typeof data.content !== 'string') {
                 const message = data?.error || 'Soubor se nepodařilo načíst.';
-                if (automatic) document.getElementById('file-name').textContent = `Automatické načtení selhalo: ${message}`;
+                if (automatic) { document.getElementById('file-name').textContent = `Automatické načtení selhalo: ${message}`; completeStartupProgressTask('Automatické načtení se nezdařilo.'); finishStartupProgressBranch(true); }
                 else historyStatus.textContent = message;
                 return;
             }
             const csvFile = new File([data.content], file.name, { type: 'text/csv;charset=utf-8' });
+            if (automatic) completeStartupProgressTask('CSV soubor stažen. Zpracováváme jeho záznamy…');
             document.getElementById('file-name').innerText = `Období: ${periodLabel(file.name)}`;
-            handleFileSelect({ target: { files: [csvFile] } });
+            handleFileSelect({ target: { files: [csvFile] } }, automatic ? (ok) => { completeStartupProgressTask(ok ? 'Aktuální data byla zpracována.' : 'CSV soubor se nepodařilo zpracovat.'); finishStartupProgressBranch(ok ? null : true); } : null);
             closeHistory();
         });
     }
