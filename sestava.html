@@ -134,7 +134,7 @@ function loadAnalysisPeriods(){
   loadAnalysisPeriod();
  });
 }
-function chooseCol(headers,tests,exclude=[]){let candidates=headers.filter(h=>!exclude.includes(h));for(let t of tests){let h=candidates.find(x=>t(x));if(h)return h}return null}
+function chooseCol(headers,tests,exclude=[]){let candidates=headers.filter(h=>!exclude.includes(h));if(typeof tests==='function')tests=[tests];for(let t of tests){let h=candidates.find(x=>t(x));if(h)return h}return null}
 function buildAnalysis(actualText,configText,period){
  let actualRows=parseCSV(actualText),cfgRows=parseCSV(configText);
  if(!actualRows.length)throw Error('Provozní CSV neobsahuje žádná data.');
