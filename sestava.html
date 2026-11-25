@@ -26,7 +26,7 @@
 <script>
 let rows=[],sources=[],consumers=[];
 const $=id=>document.getElementById(id);
-function parseCSV(text){text=text.replace(/^\uFEFF/,'');let lines=text.split(/\r?\n/).filter(x=>x.trim());let delim=lines[0].includes(';')?';':',';function split(line){let a=[],v='',q=false;for(let i=0;i<line.length;i++){let c=line[i];if(c==='"'&&line[i+1]==='"'&&q){v+='"';i++}else if(c==='"')q=!q;else if(c===delim&&!q){a.push(v);v=''}else v+=c}a.push(v);return a}let h=split(lines.shift()).map(x=>x.trim().replace(/^\uFEFF/,''));return lines.map(line=>{let a=split(line);let o={};h.forEach((k,i)=>o[k]=a[i]??'');return o})}
+function parseCSV(text){text=text.replace(/^\uFEFF/,'');let lines=text.split(/\r?\n/).filter(x=>x.trim());let delim=lines[0].includes(';')?';':',';function split(line){let a=[],v='',q=false;for(let i=0;i<line.length;i++){let c=line[i];if(c==='"'&&line[i+1]==='"'&&q){v+='"';i++}else if(c==='"')q=!q;else if(c===delim&&!q){a.push(v);v=''}else v+=c}a.push(v);return a}let rawH=split(lines.shift()).map(x=>x.trim().replace(/^\uFEFF/,''));let seen={};let h=rawH.map(k=>{let n=seen[k]||0;seen[k]=n+1;return n?k+'.'+n:k});return lines.map(line=>{let a=split(line);let o={};h.forEach((k,i)=>o[k]=a[i]??'');return o})}
 function pct(s){return parseFloat(String(s||'').replace(',','.').replace('%',''))||0}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function unique(key){let m=new Map();rows.forEach(r=>{if(!m.has(r[key]))m.set(r[key],r)});return [...m.values()]}
