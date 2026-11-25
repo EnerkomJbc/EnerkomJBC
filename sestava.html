@@ -102,6 +102,7 @@ function jsonp(action,params,done){let cb='configCallback_'+(++configRequest),sc
 
 function normHeader(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'')}
 function numVal(v){let s=String(v??'').trim().replace(/[\s\u00a0]/g,'').replace(',','.').replace(/[^0-9+\-.]/g,'');let n=Number(s);return Number.isFinite(n)?n:0}
+function canonicalEAN(v){let s=String(v??'').trim();let m=s.match(/(?:^|\\D)(\\d{18})(?:\\D|$)/);if(m)return m[1];let digits=s.replace(/\\D/g,'');return digits||''}
 function dateFromDMY(s){let m=String(s).match(/^(\d{2})-(\d{2})-(\d{4})$/);return m?new Date(+m[3],+m[2]-1,+m[1]):null}
 function lastDay(y,m){return new Date(y,m,0).getDate()}
 function parseActualFile(file){
@@ -142,12 +143,12 @@ function buildAnalysis(actualText,configText,period){
  let energyCol=chooseCol(hs,[h=>/kwh/.test(normHeader(h)),h=>/mnozstvi/.test(normHeader(h)),h=>/energie/.test(normHeader(h)),h=>/sdilene/.test(normHeader(h))]);
  if(!sourceCol||!consumerCol||!energyCol)throw Error('V provozním CSV jsem nenašel sloupce EANd, EANo a množství energie (kWh). Nalezené hlavičky: '+hs.join(', '));
  let sharedS=new Map(),sharedC=new Map();
- actualRows.forEach(r=>{let s=String(r[sourceCol]||'').trim(),c=String(r[consumerCol]||'').trim(),k=numVal(r[energyCol]);if(s)sharedS.set(s,(sharedS.get(s)||0)+k);if(c)sharedC.set(c,(sharedC.get(c)||0)+k)});
+ actualRows.forEach(r=>{let s=canonicalEAN(r[sourceCol]),c=canonicalEAN(r[consumerCol]),k=numVal(r[energyCol]);if(s)sharedS.set(s,(sharedS.get(s)||0)+k);if(c)sharedC.set(c,(sharedC.get(c)||0)+k)});
  let configHeaders=Object.keys(cfgRows[0]||{}),eanSource=chooseCol(configHeaders,h=>normHeader(h)==='ean1'),eanConsumer=chooseCol(configHeaders,h=>normHeader(h)==='ean'),actualPct=chooseCol(configHeaders,h=>normHeader(h).includes('skutecnesdileni'));
  if(!eanSource||!eanConsumer||!actualPct)throw Error('V sestavě EDC chybí EAN zdroje, EAN odběru nebo sloupec Skutečné sdílení.');
  let aliasesS=chooseCol(configHeaders,h=>normHeader(h)==='alias1'),aliasesC=chooseCol(configHeaders,h=>normHeader(h)==='alias');
  let pctS=new Map(),countS=new Map(),namesS=new Map(),namesC=new Map();
- cfgRows.forEach(r=>{let s=String(r[eanSource]||'').trim(),c=String(r[eanConsumer]||'').trim();if(s){pctS.set(s,(pctS.get(s)||0)+numVal(r[actualPct]));countS.set(s,(countS.get(s)||0)+1);if(aliasesS&&r[aliasesS])namesS.set(s,r[aliasesS])}if(c&&aliasesC&&r[aliasesC])namesC.set(c,r[aliasesC])});
+ cfgRows.forEach(r=>{let s=canonicalEAN(r[eanSource]),c=canonicalEAN(r[eanConsumer]);if(s){pctS.set(s,(pctS.get(s)||0)+numVal(r[actualPct]));countS.set(s,(countS.get(s)||0)+1);if(aliasesS&&r[aliasesS])namesS.set(s,r[aliasesS])}if(c&&aliasesC&&r[aliasesC])namesC.set(c,r[aliasesC])});
  let sourceKeys=new Set([...sharedS.keys(),...pctS.keys()]),consumerKeys=new Set([...sharedC.keys()]);
  let fmt=n=>Number(n||0).toLocaleString('cs-CZ',{minimumFractionDigits:2,maximumFractionDigits:2});
  let src=[...sourceKeys].map(ean=>{let kwh=sharedS.get(ean)||0,pct=pctS.get(ean)||0,prod=pct>0?kwh/(pct/100):null;return {'EANd':ean,'Výrobna':namesS.get(ean)||'—','Sdíleno (kWh)':fmt(kwh),'Skutečné %':fmt(pct)+' %','Počet propojení':countS.get(ean)||0,'Odvozená výroba (kWh)':prod===null?'nelze vypočítat':fmt(prod)}}).sort((a,b)=>a['Výrobna'].localeCompare(b['Výrobna'],'cs'));
