@@ -14,11 +14,17 @@
 <section class="toolbar"><div><b>Načíst měsíční sestavu</b><div class="hint">Vyberte CSV sestavy skupiny (oddělovač středník). Data zůstávají v tomto prohlížeči a nikam se neodesílají.</div></div><input id="file" type="file" accept=".csv,text/csv"><button id="driveLoad" type="button">Načíst / obnovit z Google Disku</button><span id="status" class="hint">Při otevření stránky se pokusím načíst nejnovější měsíční sestavu z Google Disku. Soubor lze kdykoli vybrat i ručně.</span></section>
 <section id="app" class="hidden">
 <div class="metrics"><div class="metric"><b id="mSources">—</b><span>Výrobních EAN / FVE</span></div><div class="metric"><b id="mConsumers">—</b><span>Odběrných EAN</span></div><div class="metric"><b id="mLinks">—</b><span>Propojení zdroj–odběr</span></div><div class="metric"><b id="mMembers">—</b><span>Vlastníků výroben</span></div></div>
-<nav class="tabs"><button class="active" data-tab="network">Síťová mapa</button><button data-tab="consumers">Pohled podle odběrů</button><button data-tab="sources">Pohled podle výroben</button><button data-tab="all">Všechna propojení</button></nav>
+<nav class="tabs"><button class="active" data-tab="network">Síťová mapa</button><button data-tab="consumers">Pohled podle odběrů</button><button data-tab="sources">Pohled podle výroben</button><button data-tab="all">Všechna propojení</button><button data-tab="analysis">Výroba a spotřeba</button></nav>
 <section id="tab-network" class="panel"><h2>Síť propojení zdrojů a odběrů</h2><p class="sub">Vyberte zdroj nebo odběr. Zvýrazní se jeho vazby; mapa je schematický přehled, nikoli geografická mapa.</p><div class="searchrow"><select id="networkMode"><option value="all">Celá skupina</option><option value="source">Zvýraznit výrobnu</option><option value="consumer">Zvýraznit odběr</option></select><select id="networkPick"><option value="">Vyberte položku</option></select></div><div id="networkHost"></div><div class="legend"><span><i class="dot" style="background:#16865b"></i>Výrobní zdroj</span><span><i class="dot" style="background:#2877b8"></i>Odběrné místo</span><span>Číslo na vazbě = priorita u odběru</span></div><div id="networkDetail" class="detail hint">Kliknutím na položku v mapě zobrazíte její propojení.</div></section>
 <section id="tab-consumers" class="panel hidden"><h2>Odběrná místa a jejich priority</h2><p class="sub">Každý odběr má vlastní pořadí zdrojů. Procenta jsou hodnoty převzaté ze sestavy.</p><div class="searchrow"><input id="consumerSearch" placeholder="Hledat odběr, člena nebo EAN…"><select id="consumerPick"></select></div><div id="consumerDetail"></div></section>
 <section id="tab-sources" class="panel hidden"><h2>Výrobny a jejich odběratelé</h2><p class="sub">Opačný pohled: vyberte FVE a zobrazte odběrná místa, do kterých je zapojena.</p><div class="searchrow"><input id="sourceSearch" placeholder="Hledat výrobnu, vlastníka nebo EAN…"><select id="sourcePick"></select></div><div id="sourceDetail"></div></section>
 <section id="tab-all" class="panel hidden"><h2>Všechna propojení</h2><div class="searchrow"><input id="allSearch" placeholder="Hledat zdroj, odběr, člena nebo EAN…"><select id="priorityFilter"><option value="">Všechny priority</option></select></div><div id="allTable" class="tablewrap"></div></section>
+<section id="tab-analysis" class="panel hidden">
+<h2>Orientační výroba a spotřeba / uzavřená období</h2>
+<p class="sub">Porovnání skutečně sdílené energie z provozního CSV s procenty Skutečné sdílení z měsíční sestavy EDC.</p>
+<div class="searchrow"><label for="analysisPeriod"><b>Období:</b></label><select id="analysisPeriod"><option value="">Načítám dostupná období…</option></select><span id="analysisStatus" class="hint">Připravuji seznam období…</span></div>
+<div id="analysisTables"><div class="empty">Vyberte období.</div></div>
+</section>
 </section>
 <section id="welcome" class="panel"><div class="empty"><h2>Načítám měsíční sestavu</h2><p>Stránka hledá nejnovější konfiguraci skupiny ENERKOM JBC 01 na Google Disku. Pokud se načtení nezdaří, můžete použít ruční výběr CSV nahoře.</p></div></section>
 <details class="help"><summary>Nápověda – co tato stránka zobrazuje a jak ji používat</summary><div class="helpbody">
@@ -48,6 +54,11 @@
 <p><b>Příklad ověřený při konzultaci:</b> FVE Jbc, Palackého_29, EANd 3137. Součet skutečných procent přes 16 propojení v sestavě činil <b>14,82 %</b>. Index u stejného zdroje uváděl <b>1,14 kWh</b> skutečně nasdílené energie. Výpočet: 1,14 ÷ 0,1482 = přibližně <b>7,69 kWh</b> odvozené celkové výroby.</p>
 <p><b>Pozor na záměnu procent:</b> součet <b>Nastavených %</b> (v tomto příkladu 99,9 %) popisuje konfiguraci EDC a do tohoto výpočtu nevstupuje. Jako jmenovatel se používá součet <b>Skutečných %</b> (14,82 %), tedy skutečný podíl sdílení vypočtený z provozních dat. Výsledek 7,69 kWh je odvozená hodnota, nikoli samostatně naměřená výroba.</p>
 <p>Pro správný výpočet musí být sestava a údaj z indexu spárovány podle <b>EANd zdroje</b> a stejného <b>období</b>. V budoucím propojení se tedy pro každý zdroj vybere jeho řádky v sestavě, sečtou se jeho skutečná procenta a výsledek se spojí s celkovými skutečně nasdílenými kWh tohoto zdroje v indexu. Pokud chybí procentní součet, kWh nebo shoda období, výpočet se neprovede a hodnota se nesmí domýšlet.</p>
+<h3>Výroba a spotřeba – porovnání dvou datových zdrojů</h3>
+<p>Nová záložka <b>Výroba a spotřeba</b> spojuje skutečné toky z provozního CSV používaného hlavním přehledem s měsíční sestavou EDC. Zobrazuje zvlášť výrobní zdroje (EANd) a odběrná místa (EANo), jejich skutečně sdílenou energii v kWh a odvozenou celkovou výrobu zdrojů.</p>
+<p><b>Aktuální / poslední dostupné období je vždy pouze orientační.</b> Provozní CSV a sestava EDC mohou zachycovat rozdílný rozsah průběžných dat, proto se jejich hodnoty nemusejí časově přesně překrývat. Orientační výsledek není konečná měsíční bilance.</p>
+<p>Další nabídnutá období jsou pouze uzavřené celé kalendářní měsíce, pro které jsou na Google Disku dostupné oba potřebné soubory: provozní CSV s celým měsícem (od prvního do posledního dne) a odpovídající měsíční CSV sestavy EDC. V nabídce mohou být všechny takto dostupné měsíce, nikoli jen bezprostředně předchozí měsíc. Pokud některý z obou souborů chybí nebo provozní CSV nepokrývá celý kalendářní měsíc, období se jako uzavřené nenabídne.</p>
+<p>U zdroje se celková výroba odvozuje jako <b>skutečně sdílené kWh ÷ (součet Skutečných % ÷ 100)</b>. Procenta se sčítají přes všechna propojení daného EANd. Tento výpočet má smysl jen při shodném období a odpovídající sestavě. U odběrného místa zatím zobrazujeme skutečně sdílené kWh; celkovou spotřebu neodhadujeme, protože Skutečné % vyjadřuje podíl z výroby zdroje, nikoli podíl z celkové spotřeby odběratele. Metodu pro spotřebu ověříme až porovnáním s úplnými údaji v ECM Marfy.</p>
 <h3>Plánované propojení sestavy s hlavní aplikací index.html</h3>
 <p><b>Základní přehled indexu má zůstat jednoduchý a fungovat jako dosud.</b> Uživatel v něm vidí skutečné sdílení a poslední načtené období. Konfigurační sestava EDC se nemá automaticky vnucovat do běžného přehledu.</p>
 <p>Do menu hlavní aplikace má přibýt samostatná dlaždice nebo přepínač <b>„Sestava“</b>. Ve vypnutém stavu se index chová jako dosud. Po zapnutí se načte odpovídající měsíční konfigurační CSV a v dolní části hlavní stránky se otevře nová sekce s přehledem <b>„Všechna propojení“</b>, obdobným pohledu v této testovací sestavě. Přepínač umožní sestavu zobrazit a zase skrýt.</p>
@@ -88,6 +99,73 @@ function renderAll(){let q=$('allSearch').value.toLowerCase(),p=$('priorityFilte
 const CONFIG_API_URL='https://script.google.com/macros/s/AKfycbyIYLMvyK1SsOxZG3jmvXJmIgoOzsoEjQoIjyZ5ykkOBfId1EDJkDOnwC91IONx8lPx/exec';
 let configRequest=0;
 function jsonp(action,params,done){let cb='configCallback_'+(++configRequest),script=document.createElement('script'),q=new URLSearchParams({action,callback:cb,...params,_:String(Date.now())}),finished=false;let cleanup=()=>{if(finished)return;finished=true;delete window[cb];script.remove()};window[cb]=data=>{cleanup();done(data)};script.onerror=()=>{cleanup();done({ok:false,error:'Nepodařilo se spojit s Google Diskem.'})};script.src=CONFIG_API_URL+'?'+q.toString();document.body.appendChild(script);setTimeout(()=>{if(!finished){cleanup();done({ok:false,error:'Načítání z Google Disku vypršelo.'})}},30000)}
+
+function normHeader(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]/g,'')}
+function numVal(v){let s=String(v??'').trim().replace(/[\\s\\u00a0]/g,'').replace(',','.').replace(/[^0-9+\\-.]/g,'');let n=Number(s);return Number.isFinite(n)?n:0}
+function dateFromDMY(s){let m=String(s).match(/^(\\d{2})-(\\d{2})-(\\d{4})$/);return m?new Date(+m[3],+m[2]-1,+m[1]):null}
+function lastDay(y,m){return new Date(y,m,0).getDate()}
+function parseActualFile(file){
+ let m=String(file.name||'').match(/^prehled_sdileni_skupiny_(sk-[A-Za-z0-9_-]+)_za_obdobi_(\\d{2}-\\d{2}-\\d{4})_(\\d{2}-\\d{2}-\\d{4})(?:\\.csv)?$/i);
+ if(!m)return null;let a=dateFromDMY(m[2]),b=dateFromDMY(m[3]);if(!a||!b||isNaN(a)||isNaN(b))return null;
+ return {file,start:a,end:b,group:m[1],year:b.getFullYear(),month:b.getMonth()+1,full:a.getDate()===1&&a.getMonth()===b.getMonth()&&a.getFullYear()===b.getFullYear()&&b.getDate()===lastDay(b.getFullYear(),b.getMonth()+1)};
+}
+function parseConfigFile(file){
+ let m=String(file.name||'').match(/^sestava_skupiny_sdileni_(sk-[A-Za-z0-9_-]+)_(\\d{4})-(\\d{2})(?:\\s*\\(\\d+\\))?(?:\\.csv)?$/i);
+ return m?{file,group:m[1],year:+m[2],month:+m[3]}:null;
+}
+let analysisPeriods=[],analysisList=null;
+function loadAnalysisPeriods(){
+ $('analysisStatus').textContent='Načítám dostupná provozní CSV a sestavy EDC z Google Disku…';
+ jsonp('list',{},list=>{
+  if(!list||!list.ok||!Array.isArray(list.files)){ $('analysisStatus').textContent='Seznam souborů se nepodařilo načíst: '+(list?.error||'neznámá chyba');return; }
+  analysisList=list.files;
+  let actual=list.files.map(parseActualFile).filter(Boolean).sort((a,b)=>b.end-a.end);
+  let configs=list.files.map(parseConfigFile).filter(x=>x&&x.month>=1&&x.month<=12);
+  if(!actual.length){$('analysisStatus').textContent='Na Disku zatím nejsou dostupná provozní CSV s výsledky sdílení.';return;}
+  let latest=actual[0], periods=[{key:'current',label:'Poslední dostupné období – '+latest.file.name.replace(/^.*_za_obdobi_/,'').replace(/\\.csv$/i,'').replace(/_/g,' až ')+' (ORIENTAČNÍ)',actual:latest,config:configs.find(x=>x.group===latest.group&&x.year===latest.year&&x.month===latest.month)||null,current:true}];
+  let closed=actual.filter(x=>x.full&&!(x.file.id===latest.file.id)).map(x=>{
+   let cfg=configs.find(c=>c.group===x.group&&c.year===x.year&&c.month===x.month);
+   return cfg?{key:'month-'+x.year+'-'+String(x.month).padStart(2,'0'),label:new Intl.DateTimeFormat('cs-CZ',{month:'long',year:'numeric'}).format(new Date(x.year,x.month-1,1))+' – kompletní období',actual:x,config:cfg,current:false}:null;
+  }).filter(Boolean);
+  let seen=new Set();closed=closed.filter(p=>{if(seen.has(p.key))return false;seen.add(p.key);return true}).sort((a,b)=>b.actual.end-a.actual.end);
+  analysisPeriods=periods.concat(closed);
+  $('analysisPeriod').innerHTML=analysisPeriods.map(p=>'<option value="'+p.key+'">'+esc(p.label)+'</option>').join('');
+  $('analysisStatus').textContent='Dostupné: 1 orientační období a '+closed.length+' kompletních měsíců. Kompletní měsíce se zobrazí jen při dostupnosti obou odpovídajících CSV.';
+  loadAnalysisPeriod();
+ });
+}
+function chooseCol(headers,tests,exclude=[]){let candidates=headers.filter(h=>!exclude.includes(h));for(let t of tests){let h=candidates.find(x=>t(x));if(h)return h}return null}
+function buildAnalysis(actualText,configText,period){
+ let actualRows=parseCSV(actualText),cfgRows=parseCSV(configText);
+ if(!actualRows.length)throw Error('Provozní CSV neobsahuje žádná data.');
+ let hs=Object.keys(actualRows[0]),sourceCol=chooseCol(hs,h=>normHeader(h).includes('eand')),consumerCol=chooseCol(hs,h=>normHeader(h).includes('eano'));
+ let energyCol=chooseCol(hs,[h=>/kwh/.test(normHeader(h)),h=>/mnozstvi/.test(normHeader(h)),h=>/energie/.test(normHeader(h)),h=>/sdilene/.test(normHeader(h))]);
+ if(!sourceCol||!consumerCol||!energyCol)throw Error('V provozním CSV jsem nenašel sloupce EANd, EANo a množství energie (kWh). Nalezené hlavičky: '+hs.join(', '));
+ let sharedS=new Map(),sharedC=new Map();
+ actualRows.forEach(r=>{let s=String(r[sourceCol]||'').trim(),c=String(r[consumerCol]||'').trim(),k=numVal(r[energyCol]);if(s)sharedS.set(s,(sharedS.get(s)||0)+k);if(c)sharedC.set(c,(sharedC.get(c)||0)+k)});
+ let configHeaders=Object.keys(cfgRows[0]||{}),eanSource=chooseCol(configHeaders,h=>normHeader(h)==='ean1'),eanConsumer=chooseCol(configHeaders,h=>normHeader(h)==='ean'),actualPct=chooseCol(configHeaders,h=>normHeader(h).includes('skutecnesdileni'));
+ if(!eanSource||!eanConsumer||!actualPct)throw Error('V sestavě EDC chybí EAN zdroje, EAN odběru nebo sloupec Skutečné sdílení.');
+ let aliasesS=chooseCol(configHeaders,h=>normHeader(h)==='alias1'),aliasesC=chooseCol(configHeaders,h=>normHeader(h)==='alias');
+ let pctS=new Map(),countS=new Map(),namesS=new Map(),namesC=new Map();
+ cfgRows.forEach(r=>{let s=String(r[eanSource]||'').trim(),c=String(r[eanConsumer]||'').trim();if(s){pctS.set(s,(pctS.get(s)||0)+numVal(r[actualPct]));countS.set(s,(countS.get(s)||0)+1);if(aliasesS&&r[aliasesS])namesS.set(s,r[aliasesS])}if(c&&aliasesC&&r[aliasesC])namesC.set(c,r[aliasesC])});
+ let sourceKeys=new Set([...sharedS.keys(),...pctS.keys()]),consumerKeys=new Set([...sharedC.keys()]);
+ let fmt=n=>Number(n||0).toLocaleString('cs-CZ',{minimumFractionDigits:2,maximumFractionDigits:2});
+ let src=[...sourceKeys].map(ean=>{let kwh=sharedS.get(ean)||0,pct=pctS.get(ean)||0,prod=pct>0?kwh/(pct/100):null;return {'EANd':ean,'Výrobna':namesS.get(ean)||'—','Sdíleno (kWh)':fmt(kwh),'Skutečné %':fmt(pct)+' %','Počet propojení':countS.get(ean)||0,'Odvozená výroba (kWh)':prod===null?'nelze vypočítat':fmt(prod)}}).sort((a,b)=>a['Výrobna'].localeCompare(b['Výrobna'],'cs'));
+ let con=[...consumerKeys].map(ean=>({'EANo':ean,'Odběrné místo':namesC.get(ean)||'—','Sdíleno (kWh)':fmt(sharedC.get(ean)||0),'Celková spotřeba':'zatím nelze odvodit – ověřit v ECM Marfy'})).sort((a,b)=>a['Odběrné místo'].localeCompare(b['Odběrné místo'],'cs'));
+ let label=period.current?'ORIENTAČNÍ DATA – průběžné soubory nemusí mít shodný rozsah.':'KOMPLETNÍ OBDOBÍ – celé kalendářní měsíce, oba CSV soubory jsou dostupné.';
+ $('analysisTables').innerHTML='<div class="detail"><b>'+label+'</b><div class="hint">Provozní data: '+esc(period.actual.file.name)+'<br>Sestava EDC: '+esc(period.config?period.config.file.name:'není k dispozici')+'</div></div><h3>Výrobní zdroje (EANd)</h3><p class="hint">Odvozená výroba = skutečně sdílené kWh ÷ (součet Skutečných % / 100). Jde o výpočet, nikoli přímo naměřenou výrobu.</p>'+table(src,[['EANd','EANd'],['Výrobna','Výrobna'],['Sdíleno (kWh)','Sdíleno (kWh)'],['Skutečné %','Součet Skutečných %'],['Počet propojení','Propojení'],['Odvozená výroba (kWh)','Odvozená výroba (kWh)']])+'<h3 style="margin-top:22px">Odběrná místa (EANo)</h3><p class="hint">Celková spotřeba se zatím nepočítá. Skutečné % je podíl z výroby zdroje, nikoli z celkové spotřeby odběratele.</p>'+table(con,[['EANo','EANo'],['Odběrné místo','Odběrné místo'],['Sdíleno (kWh)','Sdíleno (kWh)'],['Celková spotřeba','Celková spotřeba']]);
+}
+function loadAnalysisPeriod(){
+ let p=analysisPeriods.find(x=>x.key===$('analysisPeriod').value)||analysisPeriods[0];if(!p)return;
+ $('analysisStatus').textContent='Načítám vybraná CSV…';$('analysisTables').innerHTML='<div class="empty">Načítám data období…</div>';
+ if(!p.config){$('analysisStatus').textContent='Pro toto období není na Disku odpovídající sestava EDC; výpočet výroby nelze provést.';$('analysisTables').innerHTML='<div class="detail">Provozní CSV: '+esc(p.actual.file.name)+'<br>Odpovídající měsíční sestava EDC nebyla nalezena.</div>';return;}
+ let actualText=null,configText=null,failed=false;
+ const done=()=>{if(failed||actualText===null||configText===null)return;try{buildAnalysis(actualText,configText,p);$('analysisStatus').textContent=p.current?'Orientační průběžná data.':'Kompletní kalendářní měsíc.'}catch(e){$('analysisStatus').textContent='Chyba zpracování: '+e.message;$('analysisTables').innerHTML='<div class="detail">'+esc(e.message)+'</div>'}};
+ jsonp('get',{id:p.actual.file.id},d=>{if(!d?.ok||typeof d.content!=='string'){failed=true;$('analysisStatus').textContent='Provozní CSV se nepodařilo načíst: '+(d?.error||'chyba');return}actualText=d.content;done()});
+ jsonp('get',{id:p.config.file.id},d=>{if(!d?.ok||typeof d.content!=='string'){failed=true;$('analysisStatus').textContent='Sestavu EDC se nepodařilo načíst: '+(d?.error||'chyba');return}configText=d.content;done()});
+}
+$('analysisPeriod').addEventListener('change',loadAnalysisPeriod);
+
 function useCsvText(text,label){let raw=parseCSV(text);let required=['EAN','Typ','Člen','Alias','EAN.1','Typ.1','Člen.1','Alias.1','Priorita','Procento sdílení','Skutečné sdílení','Dlouhodobý průměr skutečného sdílení'];if(!raw.length||!required.every(k=>k in raw[0]))throw Error('CSV nemá očekávané sloupce sestavy.');rows=raw.map(r=>({...r,EAN_o:r.EAN,EAN_v:r['EAN.1']}));render();$('status').textContent=label+' · načteno '+rows.length+' propojení.'}
 function loadFromDrive(){ $('status').textContent='Hledám měsíční sestavu skupiny ENERKOM JBC 01 na Google Disku…';jsonp('list',{},list=>{if(!list||!list.ok||!Array.isArray(list.files)){ $('status').textContent='Automatické načtení se nezdařilo: '+(list?.error||'Nelze získat seznam souborů. Použijte ruční výběr CSV.');return;}
 let matches=list.files.map(file=>{let m=String(file.name||'').match(/^sestava_skupiny_sdileni_sk-EnerkomJBC_01_(\d{4})-(\d{2})(?:\s*\(\d+\))?(?:\.csv)?$/i);return m?{file,year:+m[1],month:+m[2]}:null}).filter(x=>x&&x.month>=1&&x.month<=12).sort((a,b)=>b.year-a.year||b.month-a.month);
@@ -97,7 +175,8 @@ let newest=matches[0];$('status').textContent='Našel jsem sestavu '+newest.year
 $('driveLoad').addEventListener('click',loadFromDrive);
 $('file').addEventListener('change',async e=>{let f=e.target.files[0];if(!f)return;try{useCsvText(await f.text(),f.name)}catch(err){$('status').textContent='Chyba načtení: '+err.message}});
 loadFromDrive();
-document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));['network','consumers','sources','all'].forEach(t=>$('tab-'+t).classList.toggle('hidden',t!==b.dataset.tab))}));
+loadAnalysisPeriods();
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));['network','consumers','sources','all','analysis'].forEach(t=>$('tab-'+t).classList.toggle('hidden',t!==b.dataset.tab))}));
 $('networkMode').addEventListener('change',()=>drawNetwork());$('networkPick').addEventListener('change',()=>drawNetwork());$('consumerPick').addEventListener('change',renderConsumer);$('sourcePick').addEventListener('change',renderSource);$('consumerSearch').addEventListener('input',()=>{let q=$('consumerSearch').value.toLowerCase();let a=consumers.filter(r=>(r.Alias+' '+r['Člen']+' '+r.EAN_o).toLowerCase().includes(q));fillSelect('consumerPick',a,'EAN_o','Alias');renderConsumer()});$('sourceSearch').addEventListener('input',()=>{let q=$('sourceSearch').value.toLowerCase();let a=sources.filter(r=>(r['Alias.1']+' '+r['Člen.1']+' '+r.EAN_v).toLowerCase().includes(q));fillSelect('sourcePick',a,'EAN_v','Alias.1');renderSource()});$('allSearch').addEventListener('input',renderAll);$('priorityFilter').addEventListener('change',renderAll);
 </script>
 </body></html>
