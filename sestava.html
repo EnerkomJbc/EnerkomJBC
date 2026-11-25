@@ -100,17 +100,17 @@ const CONFIG_API_URL='https://script.google.com/macros/s/AKfycbyIYLMvyK1SsOxZG3j
 let configRequest=0;
 function jsonp(action,params,done){let cb='configCallback_'+(++configRequest),script=document.createElement('script'),q=new URLSearchParams({action,callback:cb,...params,_:String(Date.now())}),finished=false;let cleanup=()=>{if(finished)return;finished=true;delete window[cb];script.remove()};window[cb]=data=>{cleanup();done(data)};script.onerror=()=>{cleanup();done({ok:false,error:'Nepodařilo se spojit s Google Diskem.'})};script.src=CONFIG_API_URL+'?'+q.toString();document.body.appendChild(script);setTimeout(()=>{if(!finished){cleanup();done({ok:false,error:'Načítání z Google Disku vypršelo.'})}},30000)}
 
-function normHeader(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]/g,'')}
-function numVal(v){let s=String(v??'').trim().replace(/[\\s\\u00a0]/g,'').replace(',','.').replace(/[^0-9+\\-.]/g,'');let n=Number(s);return Number.isFinite(n)?n:0}
-function dateFromDMY(s){let m=String(s).match(/^(\\d{2})-(\\d{2})-(\\d{4})$/);return m?new Date(+m[3],+m[2]-1,+m[1]):null}
+function normHeader(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'')}
+function numVal(v){let s=String(v??'').trim().replace(/[\s\u00a0]/g,'').replace(',','.').replace(/[^0-9+\-.]/g,'');let n=Number(s);return Number.isFinite(n)?n:0}
+function dateFromDMY(s){let m=String(s).match(/^(\d{2})-(\d{2})-(\d{4})$/);return m?new Date(+m[3],+m[2]-1,+m[1]):null}
 function lastDay(y,m){return new Date(y,m,0).getDate()}
 function parseActualFile(file){
- let m=String(file.name||'').match(/^prehled_sdileni_skupiny_(sk-[A-Za-z0-9_-]+)_za_obdobi_(\\d{2}-\\d{2}-\\d{4})_(\\d{2}-\\d{2}-\\d{4})(?:\\.csv)?$/i);
+ let m=String(file.name||'').match(/^prehled_sdileni_skupiny_(sk-[A-Za-z0-9_-]+)_za_obdobi_(\d{2}-\d{2}-\d{4})_(\d{2}-\d{2}-\d{4})(?:\.csv)?$/i);
  if(!m)return null;let a=dateFromDMY(m[2]),b=dateFromDMY(m[3]);if(!a||!b||isNaN(a)||isNaN(b))return null;
  return {file,start:a,end:b,group:m[1],year:b.getFullYear(),month:b.getMonth()+1,full:a.getDate()===1&&a.getMonth()===b.getMonth()&&a.getFullYear()===b.getFullYear()&&b.getDate()===lastDay(b.getFullYear(),b.getMonth()+1)};
 }
 function parseConfigFile(file){
- let m=String(file.name||'').match(/^sestava_skupiny_sdileni_(sk-[A-Za-z0-9_-]+)_(\\d{4})-(\\d{2})(?:\\s*\\(\\d+\\))?(?:\\.csv)?$/i);
+ let m=String(file.name||'').match(/^sestava_skupiny_sdileni_(sk-[A-Za-z0-9_-]+)_(\d{4})-(\d{2})(?:\s*\(\d+\))?(?:\.csv)?$/i);
  return m?{file,group:m[1],year:+m[2],month:+m[3]}:null;
 }
 let analysisPeriods=[],analysisList=null;
@@ -122,7 +122,7 @@ function loadAnalysisPeriods(){
   let actual=list.files.map(parseActualFile).filter(Boolean).sort((a,b)=>b.end-a.end);
   let configs=list.files.map(parseConfigFile).filter(x=>x&&x.month>=1&&x.month<=12);
   if(!actual.length){$('analysisStatus').textContent='Na Disku zatím nejsou dostupná provozní CSV s výsledky sdílení.';return;}
-  let latest=actual[0], periods=[{key:'current',label:'Poslední dostupné období – '+latest.file.name.replace(/^.*_za_obdobi_/,'').replace(/\\.csv$/i,'').replace(/_/g,' až ')+' (ORIENTAČNÍ)',actual:latest,config:configs.find(x=>x.group===latest.group&&x.year===latest.year&&x.month===latest.month)||null,current:true}];
+  let latest=actual[0], periods=[{key:'current',label:'Poslední dostupné období – '+latest.file.name.replace(/^.*_za_obdobi_/,'').replace(/\.csv$/i,'').replace(/_/g,' až ')+' (ORIENTAČNÍ)',actual:latest,config:configs.find(x=>x.group===latest.group&&x.year===latest.year&&x.month===latest.month)||null,current:true}];
   let closed=actual.filter(x=>x.full&&!(x.file.id===latest.file.id)).map(x=>{
    let cfg=configs.find(c=>c.group===x.group&&c.year===x.year&&c.month===x.month);
    return cfg?{key:'month-'+x.year+'-'+String(x.month).padStart(2,'0'),label:new Intl.DateTimeFormat('cs-CZ',{month:'long',year:'numeric'}).format(new Date(x.year,x.month-1,1))+' – kompletní období',actual:x,config:cfg,current:false}:null;
