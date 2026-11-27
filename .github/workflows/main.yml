@@ -1,0 +1,13 @@
+name: EDC automatický export
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 11 * * *"
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kontrola spuštění
+        run: echo "GitHub Actions je připraven pro automatický export EDC."
