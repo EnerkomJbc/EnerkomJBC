@@ -1,0 +1,46 @@
+﻿EDC – automatický export dat 
+Postup 6 – pokračování po dosažení limitu • 27. 11. 2026 
+Účel dokumentu 
+Tento dokument navazuje na „EDC-postup-5-pokracovani.pdf“. Je určen jako přesná nápověda pro další přihlášení a pokračování krok za krokem v přípravě automatického měsíčního exportu dat z portálu EDC do Google Drive pomocí Google Apps Script. 
+Projekt a již hotové nastavení 
+• Cílová skupina sdílení: EnerkomJBC_01. 
+• Google Drive složka: EDC-Export; ID složky: 1RB_bgnCTxIPVXfvnrsPYmE90DwP74RWj. • Apps Script projekt: EDC-export ENERKOM, vytvořen pod správným účtem ENERKOM. • Test zápisu do Google Drive již úspěšně proběhl: skript našel složku, vytvořil EDC-EXPORT-TEST.txt a ověřil zápis. Test neopakovat. 
+• Plán ukládat dva druhy CSV měsíčně, například 2026-02-A.csv a 2026-02-B.csv. Přiřazení typů A/B zatím není ověřeno. 
+Co je ověřeno v EDC 
+• V EDC byla otevřena stránka Správa dat → Zobrazení dat. 
+• Vstupní volba: Skupina sdílení; vybraná skupina: EnerkomJBC_01. 
+• Byl ponechán první typ zobrazení (ikona zdroje + slunce), zaškrtnuté položky Naměřená data i Výsledky vyhodnocení. 
+• Časový interval při testu: 26. 11. 2026 až 27. 11. 2026; volba Aktuální k datu, datum/čas 27. 11. 2026 18:07. 
+• Report Export-dat-2026-11-27-06-08.csv byl úspěšně naplánován pod ID 1288180. • Dřívější test stahování reportu potvrdil GET na cestu /api/v0/report/{ID}/download; ID je dynamické a nesmí být pevně zakódováno. 
+• Při stažení byl ověřen HTTP 200, CSV a Content-Type: text/csv; v odpovědi se objevil název profile_overview.csv. 
+• U GET požadavku byly vidět hlavičky Authorization: Bearer a Edc-Contract-Type: STANDARD. Cookies u tohoto požadavku nebyly. 
+Nově zjištěno v tomto pokračování – POST pro vytvoření reportu 
+Po zadání filtru „export“ v panelu Firefox Developer Tools → Síť (Network) se zobrazily dva požadavky. Byl vybrán první řádek POST; druhý řádek OPTIONS je pro tuto chvíli vedlejší. 
+Ověřené údaje POST: 
+• Metoda: POST 
+• Doména: api.portal.edc-cr.cz 
+• Cesta: /api/v0/profiles-data/standard/export 
+• Stav: HTTP 200 
+• Verze: HTTP/1.1 
+• Typ požadavku: JSON 
+• Přenesená velikost: přibližně 1,12 kB; velikost požadavku zobrazená v detailu: 169 B. Poznámka: přesná URL a stav jsou přečteny ze screenshotu Firefoxu. Obsah těla POST zatím nebyl prohlédnut. 
+Přesné místo navázání – aktuální stav 
+Firefox Developer Tools → Síť (Network) je otevřené a filtr obsahuje „export“. První řádek POST je vybraný. V pravém panelu je otevřená záložka Hlavičky; v detailu je vidět URL a HTTP 200. Na stránce EDC se mezitím objevilo upozornění Automatické odhlášení s informací, že relace vyprší za 28 sekund. Upozornění má žluté tlačítko Zavřít. 
+První krok po načtení tohoto PDF
+EDC – automatický export dat | Postup 6 Strana 1 
+1. V okně automatického odhlášení kliknout na žluté tlačítko Zavřít, aby se zachovala relace, pokud je stále aktivní. 
+2. V pravém panelu detailu vybraného POST kliknout na záložku Požadavek (vedle Hlavičky a Cookies). 3. Zkontrolovat tělo požadavku – pouze ne-citlivou strukturu a názvy polí. Pokud se objeví token, heslo, Authorization, Cookie nebo jiný tajný údaj, začernit jej. 
+4. Poslat screenshot celé obrazovky. Zatím neprovádět další export ani neklikat na Přejít na reporty. 
+Bezpečnost – důležité 
+Na dřívějším screenshotu byla čitelná celá hodnota hlavičky Authorization: Bearer. Považujte ji za kompromitovanou. Před dalším pokračováním doporučujeme ukončit aktuální relaci EDC a znovu se přihlásit, aby vznikla nová relace/token. Nikdy neposílat hesla, tokeny, cookies, Authorization hlavičky ani HAR soubory. Na screenshotech začernit hodnoty tokenů, cookies, Authorization a případné accessToken parametry URL. Pro analýzu stačí názvy hlaviček, URL bez tajných parametrů, metoda, stav a ne-citlivá struktura požadavku. 
+Další plán 
+• Zjistit ne-citlivou strukturu těla POST. 
+• Zjistit, jak EDC vrací ID reportu a jak jej lze dynamicky načíst ze seznamu Reportů. • Ověřit druhý typ exportu a přiřazení typů A/B. 
+• Navrhnout bezpečný test jednoho exportu v Google Apps Script a ověřit ukládání/přepis CSV do složky EDC-Export. 
+• Teprve po úspěšném testu nastavit automatické měsíční spouštění. 
+Pracovní pravidla 
+• Postupovat po jednotlivých krocích: jedna konkrétní instrukce, potom vyčkat na screenshot. • Rozlišovat UI portálu EDC od UI Firefox Developer Tools. 
+• Neopakovat již úspěšný test zápisu do Google Drive. 
+• ID reportu je dynamické; nikdy jej nezapisovat napevno do finálního skriptu. 
+Pokyn pro příští přihlášení: Nahraj tento dokument a napiš „Pokračujeme v EDC exportu. Přečti PDF a navážeme.“ Začni přesně krokem: zavřít upozornění o automatickém odhlášení (pokud je stále zobrazené), potom v detailu vybraného POST otevřít záložku Požadavek a vyžádat screenshot.
+EDC – automatický export dat | Postup 6 Strana 2
