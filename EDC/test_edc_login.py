@@ -37,26 +37,19 @@ def main():
             ).first
 
             if login_link.count():
-                try:
-                    with page.expect_popup(timeout=3000) as popup_info:
-                        login_link.click()
-                    page = popup_info.value
-                    page.set_default_timeout(15000)
-                except PlaywrightTimeoutError:
-                    login_link.click()
+                login_link.click()
             elif login_button.count():
-                try:
-                    with page.expect_popup(timeout=3000) as popup_info:
-                        login_button.click()
-                    page = popup_info.value
-                    page.set_default_timeout(15000)
-                except PlaywrightTimeoutError:
-                    login_button.click()
+                login_button.click()
             else:
                 print("EDC_LOGIN_FORM_NOT_FOUND: Na úvodní stránce není rozpoznáno tlačítko přihlášení.")
                 print("EDC_PAGE:", safe_location(page.url))
                 return 3
 
+            page.wait_for_timeout(1200)
+            opened_pages = [candidate for candidate in context.pages if candidate != page]
+            if opened_pages:
+                page = opened_pages[-1]
+                page.set_default_timeout(15000)
             page.wait_for_load_state("domcontentloaded")
             page.wait_for_timeout(1200)
 
