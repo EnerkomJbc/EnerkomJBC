@@ -2,8 +2,6 @@ name: EDC automatický export
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 11 * * *"
 
 jobs:
   export:
