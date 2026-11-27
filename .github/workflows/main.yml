@@ -19,9 +19,16 @@ jobs:
           pip install playwright
           playwright install --with-deps chromium
 
-      - name: Ověřit přístup k EDC
+      - name: Ověřit přítomnost přihlašovacích údajů
         env:
           EDC_USERNAME: ${{ secrets.EDC_USERNAME }}
           EDC_PASSWORD: ${{ secrets.EDC_PASSWORD }}
         run: |
           python -c "import os; print('Uživatelské jméno:', 'NASTAVENO' if os.getenv('EDC_USERNAME') else 'CHYBÍ'); print('Heslo:', 'NASTAVENO' if os.getenv('EDC_PASSWORD') else 'CHYBÍ')"
+
+      - name: Otestovat přihlášení do EDC
+        env:
+          EDC_USERNAME: ${{ secrets.EDC_USERNAME }}
+          EDC_PASSWORD: ${{ secrets.EDC_PASSWORD }}
+        run: |
+          python EDC/test_edc_login.py
