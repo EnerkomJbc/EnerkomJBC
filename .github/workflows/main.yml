@@ -7,6 +7,9 @@ jobs:
   export:
     runs-on: ubuntu-latest
     steps:
+      - name: Načíst soubory repozitáře
+        uses: actions/checkout@v4
+
       - name: Připravit Python
         uses: actions/setup-python@v5
         with:
