@@ -24,11 +24,18 @@ def main():
         page = context.new_page()
         page.set_default_timeout(15000)
 
+        stage = "otevření portálu"
         try:
             print("EDC_LOGIN: Otevírám portál EDC.")
-            page.goto("https://portal.edc-cr.cz/", wait_until="domcontentloaded")
+            response = page.goto(
+                "https://portal.edc-cr.cz/",
+                wait_until="commit",
+                timeout=60000,
+            )
+            print("EDC_PORTAL_RESPONSE:", response.status if response else "bez HTTP odpovědi")
             page.wait_for_timeout(1500)
 
+            stage = "nalezení odkazu na přihlášení"
             login_link = page.get_by_role(
                 "link", name=re.compile(r"Registrace\s*/\s*Přihlášení", re.I)
             ).first
@@ -45,6 +52,7 @@ def main():
                 print("EDC_PAGE:", safe_location(page.url))
                 return 3
 
+            stage = "otevření přihlašovací stránky"
             page.wait_for_timeout(1200)
             opened_pages = [candidate for candidate in context.pages if candidate != page]
             if opened_pages:
@@ -53,6 +61,7 @@ def main():
             page.wait_for_load_state("domcontentloaded")
             page.wait_for_timeout(1200)
 
+            stage = "vyhledání přihlašovacího formuláře"
             password_input = page.locator('input[type="password"]:visible').first
             if password_input.count() == 0:
                 print("EDC_LOGIN_FORM_NOT_FOUND: Přihlašovací formulář neobsahuje viditelné pole hesla.")
@@ -86,9 +95,11 @@ def main():
                 print("EDC_PAGE:", safe_location(page.url))
                 return 5
 
+            stage = "vyplnění přihlašovacího formuláře"
             username_input.fill(username)
             password_input.fill(password)
 
+            stage = "odeslání přihlašovacího formuláře"
             submit = page.locator(
                 'button[type="submit"]:visible, input[type="submit"]:visible'
             ).first
@@ -137,7 +148,7 @@ def main():
 
         except Exception as exc:
             # Do not print exception details: browser/network errors can contain URLs or request data.
-            print("EDC_LOGIN_TECHNICAL_ERROR:", type(exc).__name__)
+            print("EDC_LOGIN_TECHNICAL_ERROR:", type(exc).__name__, "| fáze:", stage)
             return 8
         finally:
             context.close()
