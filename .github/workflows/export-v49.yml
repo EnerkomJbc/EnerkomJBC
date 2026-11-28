@@ -1,0 +1,15 @@
+name: Export version 49 HTML
+on:
+  push:
+    paths:
+      - '.github/workflows/export-v49.yml'
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: enerkom-v49-html
+          path: 49-enerkom-jablonecko-struktura-a-cistota-dat.html
+          if-no-files-found: error
